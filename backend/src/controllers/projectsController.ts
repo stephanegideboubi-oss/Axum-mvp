@@ -83,6 +83,54 @@ export async function addLineItem(req: Request, res: Response) {
   res.status(201).json({ lineItem: result.rows[0] });
 }
 
+export async function updateLineItem(req: Request, res: Response) {
+  const parsed = createLineItemSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new HttpError(400, parsed.error.issues.map((i) => i.message).join(", "));
+  }
+  const project = await loadProjectOr404(req.params.id);
+  if (project.entrepreneur_id !== req.user!.sub) {
+    throw new HttpError(403, "Only the project owner can edit its budget");
+  }
+  if (project.status !== "draft") {
+    throw new HttpError(409, "Line items can only be edited while the project is still a draft");
+  }
+
+  const lineItem = await pool.query(
+    "SELECT id FROM budget_line_items WHERE id = $1 AND project_id = $2",
+    [req.params.lineItemId, project.id]
+  );
+  if (!lineItem.rows[0]) throw new HttpError(404, "Budget line item not found");
+
+  const { description, category, location, quantity, unitCost } = parsed.data;
+  const amount = Math.round(quantity * unitCost * 100) / 100;
+
+  const result = await pool.query(
+    `UPDATE budget_line_items
+     SET description = $1, category = $2, location = $3, quantity = $4, unit_cost = $5, amount = $6, updated_at = now()
+     WHERE id = $7 RETURNING *`,
+    [description, category, location, quantity, unitCost, amount, req.params.lineItemId]
+  );
+  res.json({ lineItem: result.rows[0] });
+}
+
+export async function deleteLineItem(req: Request, res: Response) {
+  const project = await loadProjectOr404(req.params.id);
+  if (project.entrepreneur_id !== req.user!.sub) {
+    throw new HttpError(403, "Only the project owner can edit its budget");
+  }
+  if (project.status !== "draft") {
+    throw new HttpError(409, "Line items can only be removed while the project is still a draft");
+  }
+
+  const result = await pool.query(
+    "DELETE FROM budget_line_items WHERE id = $1 AND project_id = $2 RETURNING id",
+    [req.params.lineItemId, project.id]
+  );
+  if (!result.rows[0]) throw new HttpError(404, "Budget line item not found");
+  res.status(204).send();
+}
+
 export async function publishProject(req: Request, res: Response) {
   const project = await loadProjectOr404(req.params.id);
   if (project.entrepreneur_id !== req.user!.sub) {
@@ -93,11 +141,22 @@ export async function publishProject(req: Request, res: Response) {
   }
 
   const lineItems = await pool.query(
-    "SELECT id FROM budget_line_items WHERE project_id = $1",
+    "SELECT id, amount FROM budget_line_items WHERE project_id = $1",
     [project.id]
   );
   if (lineItems.rows.length === 0) {
     throw new HttpError(400, "Add at least one budget line item before publishing");
+  }
+
+  const allocated = lineItems.rows.reduce((sum, li) => sum + Number(li.amount), 0);
+  const goal = Number(project.goal_amount);
+  if (Math.round(allocated * 100) !== Math.round(goal * 100)) {
+    throw new HttpError(
+      400,
+      `Budget line items must add up exactly to the funding goal before publishing (currently ${allocated.toFixed(
+        2
+      )} of ${goal.toFixed(2)})`
+    );
   }
 
   const client = await pool.connect();
@@ -207,5 +266,98 @@ export async function getProject(req: Request, res: Response) {
   res.json({
     project: { ...project, raised_amount: Number(raised.rows[0].raised) },
     lineItems: lineItems.rows,
+  });
+}
+
+// Owner-facing analytics: funding progress, per-line bid activity, and the
+// escrow drawdown (how much of what's been awarded is still held vs. paid
+// out), plus a heads-up on any open disputes.
+export async function getProjectAnalytics(req: Request, res: Response) {
+  const project = await loadProjectOr404(req.params.id);
+  if (project.entrepreneur_id !== req.user!.sub) {
+    throw new HttpError(403, "Only the project owner can view this project's analytics");
+  }
+
+  const raisedResult = await pool.query(
+    `SELECT COALESCE(SUM(amount), 0) AS raised FROM contributions WHERE project_id = $1 AND status = 'recorded'`,
+    [project.id]
+  );
+  const contributorResult = await pool.query(
+    `SELECT COUNT(DISTINCT contributor_id) AS count FROM contributions WHERE project_id = $1 AND status = 'recorded'`,
+    [project.id]
+  );
+
+  const lineItemsResult = await pool.query(
+    `SELECT
+       bli.id, bli.description, bli.category, bli.amount, bli.status, bli.disputed,
+       COALESCE(bid_stats.bid_count, 0) AS bid_count,
+       bid_stats.min_bid, bid_stats.max_bid, bid_stats.avg_bid,
+       selected.amount AS selected_bid_amount,
+       selected.vendor_id AS selected_vendor_id,
+       d.status AS disbursement_status,
+       d.amount AS disbursement_amount
+     FROM budget_line_items bli
+     LEFT JOIN (
+       SELECT budget_line_item_id, COUNT(*) AS bid_count, MIN(amount) AS min_bid, MAX(amount) AS max_bid, AVG(amount) AS avg_bid
+       FROM bids GROUP BY budget_line_item_id
+     ) bid_stats ON bid_stats.budget_line_item_id = bli.id
+     LEFT JOIN bids selected ON selected.budget_line_item_id = bli.id AND selected.status = 'selected'
+     LEFT JOIN disbursements d ON d.budget_line_item_id = bli.id
+     WHERE bli.project_id = $1
+     ORDER BY bli.created_at ASC`,
+    [project.id]
+  );
+
+  const disputeResult = await pool.query(
+    `SELECT COUNT(*) AS count FROM disputes d
+     JOIN budget_line_items bli ON bli.id = d.budget_line_item_id
+     WHERE bli.project_id = $1 AND d.status = 'open'`,
+    [project.id]
+  );
+
+  const lineItems = lineItemsResult.rows.map((row) => ({
+    id: row.id,
+    description: row.description,
+    category: row.category,
+    budgetedAmount: Number(row.amount),
+    status: row.status,
+    disputed: row.disputed,
+    bidCount: Number(row.bid_count),
+    minBid: row.min_bid !== null ? Number(row.min_bid) : null,
+    maxBid: row.max_bid !== null ? Number(row.max_bid) : null,
+    avgBid: row.avg_bid !== null ? Number(row.avg_bid) : null,
+    selectedBidAmount: row.selected_bid_amount !== null ? Number(row.selected_bid_amount) : null,
+    disbursementStatus: row.disbursement_status,
+    disbursementAmount: row.disbursement_amount !== null ? Number(row.disbursement_amount) : null,
+  }));
+
+  const totalBudgeted = lineItems.reduce((sum, li) => sum + li.budgetedAmount, 0);
+  const totalAwarded = lineItems
+    .filter((li) => li.selectedBidAmount !== null)
+    .reduce((sum, li) => sum + (li.selectedBidAmount ?? 0), 0);
+  const totalHeld = lineItems
+    .filter((li) => li.disbursementStatus === "held")
+    .reduce((sum, li) => sum + (li.disbursementAmount ?? 0), 0);
+  const totalReleased = lineItems
+    .filter((li) => li.disbursementStatus === "released")
+    .reduce((sum, li) => sum + (li.disbursementAmount ?? 0), 0);
+
+  const raised = Number(raisedResult.rows[0].raised);
+  const goal = Number(project.goal_amount);
+
+  res.json({
+    fundingProgressPct: goal > 0 ? Math.min(100, Math.round((raised / goal) * 10000) / 100) : 0,
+    raisedAmount: raised,
+    goalAmount: goal,
+    contributorCount: Number(contributorResult.rows[0].count),
+    openDisputeCount: Number(disputeResult.rows[0].count),
+    drawdown: {
+      totalBudgeted,
+      totalAwarded,
+      totalHeld,
+      totalReleased,
+      remainingToDisburse: Math.round((totalAwarded - totalReleased) * 100) / 100,
+    },
+    lineItems,
   });
 }

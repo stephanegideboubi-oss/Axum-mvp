@@ -2,10 +2,13 @@ import { Router } from "express";
 import {
   addLineItem,
   createProject,
+  deleteLineItem,
   getProject,
+  getProjectAnalytics,
   listProjects,
   markProjectFailed,
   publishProject,
+  updateLineItem,
 } from "../controllers/projectsController";
 import { contribute } from "../controllers/contributionsController";
 import { optionalAuth, requireAuth, requireRole } from "../middleware/auth";
@@ -16,11 +19,29 @@ export const projectsRouter = Router();
 projectsRouter.post("/", requireAuth, requireRole("entrepreneur"), asyncHandler(createProject));
 projectsRouter.get("/", optionalAuth, asyncHandler(listProjects));
 projectsRouter.get("/:id", optionalAuth, asyncHandler(getProject));
+projectsRouter.get(
+  "/:id/analytics",
+  requireAuth,
+  requireRole("entrepreneur"),
+  asyncHandler(getProjectAnalytics)
+);
 projectsRouter.post(
   "/:id/line-items",
   requireAuth,
   requireRole("entrepreneur"),
   asyncHandler(addLineItem)
+);
+projectsRouter.patch(
+  "/:id/line-items/:lineItemId",
+  requireAuth,
+  requireRole("entrepreneur"),
+  asyncHandler(updateLineItem)
+);
+projectsRouter.delete(
+  "/:id/line-items/:lineItemId",
+  requireAuth,
+  requireRole("entrepreneur"),
+  asyncHandler(deleteLineItem)
 );
 projectsRouter.patch(
   "/:id/publish",

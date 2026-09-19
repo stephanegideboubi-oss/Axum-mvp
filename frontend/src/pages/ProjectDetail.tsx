@@ -1,10 +1,18 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { contribute as contributeRequest } from "../api/contributions";
-import { addLineItem, failProject, getProject, publishProject } from "../api/projects";
+import {
+  addLineItem,
+  deleteLineItem,
+  failProject,
+  getProject,
+  publishProject,
+  updateLineItem,
+} from "../api/projects";
 import DisputePanel from "../components/DisputePanel";
 import EscrowPanel from "../components/EscrowPanel";
 import LineItemBidding from "../components/LineItemBidding";
+import ProjectAnalyticsPanel from "../components/ProjectAnalyticsPanel";
 import { useAuth } from "../context/AuthContext";
 import { BudgetLineItem, Project } from "../types/project";
 
@@ -44,6 +52,15 @@ export default function ProjectDetail() {
   const [unitCost, setUnitCost] = useState("");
   const [addingItem, setAddingItem] = useState(false);
   const [publishing, setPublishing] = useState(false);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDescription, setEditDescription] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editLocation, setEditLocation] = useState("");
+  const [editQuantity, setEditQuantity] = useState("");
+  const [editUnitCost, setEditUnitCost] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [contributionAmount, setContributionAmount] = useState("");
   const [contributing, setContributing] = useState(false);
@@ -90,6 +107,52 @@ export default function ProjectDetail() {
       setError(err?.response?.data?.error ?? "Could not add line item");
     } finally {
       setAddingItem(false);
+    }
+  }
+
+  function startEdit(li: BudgetLineItem) {
+    setEditingId(li.id);
+    setEditDescription(li.description);
+    setEditCategory(li.category);
+    setEditLocation(li.location);
+    setEditQuantity(li.quantity);
+    setEditUnitCost(li.unit_cost);
+  }
+
+  async function handleSaveEdit(e: FormEvent, lineItemId: string) {
+    e.preventDefault();
+    if (!id) return;
+    setSavingEdit(true);
+    setError(null);
+    try {
+      await updateLineItem(id, lineItemId, {
+        description: editDescription,
+        category: editCategory,
+        location: editLocation,
+        quantity: Number(editQuantity),
+        unitCost: Number(editUnitCost),
+      });
+      setEditingId(null);
+      await load();
+    } catch (err: any) {
+      setError(err?.response?.data?.error ?? "Could not update line item");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
+  async function handleDeleteLineItem(lineItemId: string) {
+    if (!id) return;
+    if (!confirm("Remove this budget line item?")) return;
+    setDeletingId(lineItemId);
+    setError(null);
+    try {
+      await deleteLineItem(id, lineItemId);
+      await load();
+    } catch (err: any) {
+      setError(err?.response?.data?.error ?? "Could not remove line item");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -143,6 +206,10 @@ export default function ProjectDetail() {
   const goalAmount = Number(project.goal_amount);
   const raised = project.raised_amount ?? 0;
   const progressPct = Math.min(100, Math.round((raised / goalAmount) * 100));
+
+  const allocated = lineItems.reduce((sum, li) => sum + Number(li.amount), 0);
+  const remainingToAllocate = Math.round((goalAmount - allocated) * 100) / 100;
+  const canPublish = lineItems.length > 0 && remainingToAllocate === 0;
 
   return (
     <div className="min-h-screen bg-neutral-50 py-10">
@@ -233,27 +300,135 @@ export default function ProjectDetail() {
             <p className="text-sm text-neutral-500">No line items yet.</p>
           )}
           <ul className="space-y-3">
-            {lineItems.map((li) => (
-              <li key={li.id} className="border border-neutral-200 rounded p-4">
-                <div className="flex justify-between">
-                  <span className="font-medium text-black">{li.description}</span>
-                  <span className="text-black">{money(li.amount, project.currency)}</span>
-                </div>
-                <p className="text-xs text-neutral-500">
-                  {li.category} · {li.location} · qty {li.quantity} @ {money(li.unit_cost, project.currency)}
-                </p>
-                {project.status !== "draft" && (
-                  <span className="mt-2 inline-block text-xs uppercase tracking-wide font-medium bg-neutral-100 text-neutral-700 px-2 py-1 rounded">
-                    {STATUS_LABELS[li.status] ?? li.status}
-                    {li.disputed ? " · flagged, disbursement frozen" : ""}
-                  </span>
-                )}
-                <LineItemBidding project={project} lineItem={li} onChanged={load} />
-                <EscrowPanel project={project} lineItem={li} onChanged={load} />
-                <DisputePanel project={project} lineItem={li} onChanged={load} />
-              </li>
-            ))}
+            {lineItems.map((li) =>
+              editingId === li.id ? (
+                <li key={li.id} className="border border-orange-300 rounded p-4 bg-orange-50">
+                  <form
+                    onSubmit={(e) => handleSaveEdit(e, li.id)}
+                    className="space-y-3"
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        className="rounded border border-neutral-300 px-3 py-2 col-span-2"
+                        placeholder="Description"
+                        value={editDescription}
+                        onChange={(e) => setEditDescription(e.target.value)}
+                        required
+                      />
+                      <input
+                        className="rounded border border-neutral-300 px-3 py-2"
+                        placeholder="Category"
+                        value={editCategory}
+                        onChange={(e) => setEditCategory(e.target.value)}
+                        required
+                      />
+                      <input
+                        className="rounded border border-neutral-300 px-3 py-2"
+                        placeholder="Location"
+                        value={editLocation}
+                        onChange={(e) => setEditLocation(e.target.value)}
+                        required
+                      />
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        className="rounded border border-neutral-300 px-3 py-2"
+                        placeholder="Quantity"
+                        value={editQuantity}
+                        onChange={(e) => setEditQuantity(e.target.value)}
+                        required
+                      />
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        className="rounded border border-neutral-300 px-3 py-2"
+                        placeholder="Unit cost (USD)"
+                        value={editUnitCost}
+                        onChange={(e) => setEditUnitCost(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        disabled={savingEdit}
+                        className="rounded bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 text-sm font-medium disabled:opacity-50"
+                      >
+                        {savingEdit ? "Saving..." : "Save"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingId(null)}
+                        className="rounded border border-neutral-300 px-3 py-1.5 text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </li>
+              ) : (
+                <li key={li.id} className="border border-neutral-200 rounded p-4">
+                  <div className="flex justify-between">
+                    <span className="font-medium text-black">{li.description}</span>
+                    <span className="text-black">{money(li.amount, project.currency)}</span>
+                  </div>
+                  <p className="text-xs text-neutral-500">
+                    {li.category} · {li.location} · qty {li.quantity} @{" "}
+                    {money(li.unit_cost, project.currency)}
+                  </p>
+                  {project.status !== "draft" && (
+                    <span className="mt-2 inline-block text-xs uppercase tracking-wide font-medium bg-neutral-100 text-neutral-700 px-2 py-1 rounded">
+                      {STATUS_LABELS[li.status] ?? li.status}
+                      {li.disputed ? " · flagged, disbursement frozen" : ""}
+                    </span>
+                  )}
+                  {isOwner && project.status === "draft" && (
+                    <div className="mt-2 flex gap-3">
+                      <button
+                        onClick={() => startEdit(li)}
+                        className="text-xs text-orange-700 underline"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteLineItem(li.id)}
+                        disabled={deletingId === li.id}
+                        className="text-xs text-red-600 underline disabled:opacity-50"
+                      >
+                        {deletingId === li.id ? "Removing..." : "Remove"}
+                      </button>
+                    </div>
+                  )}
+                  <LineItemBidding project={project} lineItem={li} onChanged={load} />
+                  <EscrowPanel project={project} lineItem={li} onChanged={load} />
+                  <DisputePanel project={project} lineItem={li} onChanged={load} />
+                </li>
+              )
+            )}
           </ul>
+
+          {project.status === "draft" && lineItems.length > 0 && (
+            <div
+              className={`mt-4 rounded border p-3 text-sm flex justify-between ${
+                remainingToAllocate === 0
+                  ? "border-green-300 bg-green-50 text-green-800"
+                  : remainingToAllocate > 0
+                  ? "border-orange-300 bg-orange-50 text-orange-800"
+                  : "border-red-300 bg-red-50 text-red-700"
+              }`}
+            >
+              <span>Allocated: {money(allocated, project.currency)} of {money(goalAmount, project.currency)}</span>
+              <span className="font-medium">
+                {remainingToAllocate === 0
+                  ? "Fully allocated — ready to publish"
+                  : remainingToAllocate > 0
+                  ? `${money(remainingToAllocate, project.currency)} remaining to allocate`
+                  : `${money(Math.abs(remainingToAllocate), project.currency)} over the goal amount`}
+              </span>
+            </div>
+          )}
 
           {isOwner && project.status === "draft" && (
             <>
@@ -313,18 +488,24 @@ export default function ProjectDetail() {
 
               <button
                 onClick={handlePublish}
-                disabled={publishing || lineItems.length === 0}
+                disabled={publishing || !canPublish}
                 className="mt-4 w-full rounded bg-green-700 text-white py-2 font-medium disabled:opacity-50"
               >
                 {publishing
                   ? "Publishing..."
                   : lineItems.length === 0
                   ? "Add at least one line item to publish"
+                  : !canPublish
+                  ? "Budget must add up to the funding goal before publishing"
                   : "Publish project"}
               </button>
             </>
           )}
         </div>
+
+        {isOwner && project.status !== "draft" && (
+          <ProjectAnalyticsPanel projectId={project.id} currency={project.currency} />
+        )}
       </div>
     </div>
   );

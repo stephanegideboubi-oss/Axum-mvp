@@ -29,3 +29,35 @@ export interface BudgetLineItem {
   created_at: string;
   updated_at: string;
 }
+
+export interface ProjectAnalyticsLineItem {
+  id: string;
+  description: string;
+  category: string;
+  budgetedAmount: number;
+  status: LineItemStatus;
+  disputed: boolean;
+  bidCount: number;
+  minBid: number | null;
+  maxBid: number | null;
+  avgBid: number | null;
+  selectedBidAmount: number | null;
+  disbursementStatus: "held" | "released" | null;
+  disbursementAmount: number | null;
+}
+
+export interface ProjectAnalytics {
+  fundingProgressPct: number;
+  raisedAmount: number;
+  goalAmount: number;
+  contributorCount: number;
+  openDisputeCount: number;
+  drawdown: {
+    totalBudgeted: number;
+    totalAwarded: number;
+    totalHeld: number;
+    totalReleased: number;
+    remainingToDisburse: number;
+  };
+  lineItems: ProjectAnalyticsLineItem[];
+}
