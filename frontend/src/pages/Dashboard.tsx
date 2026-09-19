@@ -65,10 +65,6 @@ export default function Dashboard() {
             Start a new project
           </Link>
         )}
-
-        <p className="mt-6 text-sm text-slate-500">
-          Bidding, contributions, and the admin tools land in the next pieces.
-        </p>
       </main>
     </div>
   );
