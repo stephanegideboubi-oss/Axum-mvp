@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: trustfund
+      POSTGRES_PASSWORD: trustfund_dev_pw
+      POSTGRES_DB: trustfund
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/src/db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trustfund -d trustfund"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgres://trustfund:trustfund_dev_pw@postgres:5432/trustfund
+      # Docker bind mounts on Windows don't reliably deliver filesystem change
+      # events, so fall back to polling for live-reload to work.
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host
+
+volumes:
+  pgdata:

@@ -1,0 +1,24 @@
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+# VITE_API_URL is baked into the static bundle at build time, so it must be
+# provided as a build-time variable by the hosting platform, not a runtime one.
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+RUN npm run build
+
+FROM node:20-alpine
+
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules/serve ./node_modules/serve
+COPY --from=build /app/package.json ./package.json
+
+EXPOSE 3000
+CMD ["sh", "-c", "npx serve -s dist -l ${PORT:-3000}"]
