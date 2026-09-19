@@ -94,16 +94,16 @@ export default function EscrowPanel({
   }
 
   return (
-    <div className="mt-3 border-t border-slate-100 pt-3 text-xs">
+    <div className="mt-3 border-t border-neutral-100 pt-3 text-xs">
       {error && <p className="text-red-600 mb-2">{error}</p>}
 
       {proofDocs.length > 0 && (
         <ul className="space-y-1 mb-2">
           {proofDocs.map((p) => (
-            <li key={p.id} className="bg-slate-50 rounded p-2">
-              <span className="uppercase tracking-wide font-medium text-slate-700">{p.type}</span>{" "}
+            <li key={p.id} className="bg-neutral-50 rounded p-2">
+              <span className="uppercase tracking-wide font-medium text-neutral-700">{p.type}</span>{" "}
               — <a href={p.file_url} target="_blank" rel="noreferrer" className="underline">{p.file_url}</a>
-              {p.description && <p className="text-slate-600 mt-0.5">{p.description}</p>}
+              {p.description && <p className="text-neutral-600 mt-0.5">{p.description}</p>}
             </li>
           ))}
         </ul>
@@ -113,7 +113,7 @@ export default function EscrowPanel({
         <button
           onClick={handleHold}
           disabled={busy}
-          className="rounded bg-slate-900 text-white px-3 py-1.5 disabled:opacity-50"
+          className="rounded bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 disabled:opacity-50"
         >
           {busy ? "Holding..." : `Hold ${money(lineItem.amount, project.currency)} in escrow`}
         </button>
@@ -121,12 +121,12 @@ export default function EscrowPanel({
 
       {isVendorForThisLine && ["held", "proof_submitted"].includes(lineItem.status) && (
         <form onSubmit={handleUploadProof} className="space-y-2">
-          <p className="text-slate-600">Upload proof of work for this line item:</p>
+          <p className="text-neutral-600">Upload proof of work for this line item:</p>
           <div className="grid grid-cols-3 gap-2">
             <select
               value={proofType}
               onChange={(e) => setProofType(e.target.value as ProofType)}
-              className="rounded border border-slate-300 px-2 py-1.5"
+              className="rounded border border-neutral-300 px-2 py-1.5"
             >
               <option value="invoice">Invoice</option>
               <option value="payment_proof">Payment proof</option>
@@ -135,21 +135,21 @@ export default function EscrowPanel({
             <input
               required
               placeholder="File URL"
-              className="rounded border border-slate-300 px-2 py-1.5 col-span-2"
+              className="rounded border border-neutral-300 px-2 py-1.5 col-span-2"
               value={fileUrl}
               onChange={(e) => setFileUrl(e.target.value)}
             />
           </div>
           <input
             placeholder="Description (optional)"
-            className="w-full rounded border border-slate-300 px-2 py-1.5"
+            className="w-full rounded border border-neutral-300 px-2 py-1.5"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
           <button
             type="submit"
             disabled={busy}
-            className="rounded bg-slate-900 text-white px-3 py-1.5 disabled:opacity-50"
+            className="rounded bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 disabled:opacity-50"
           >
             {busy ? "Uploading..." : "Upload proof"}
           </button>

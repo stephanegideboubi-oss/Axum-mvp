@@ -43,16 +43,16 @@ export default function TrackByUin() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10">
+    <div className="min-h-screen bg-neutral-50 py-10">
       <div className="max-w-lg mx-auto space-y-6">
-        <h1 className="text-2xl font-semibold text-slate-900">Track a project by UIN</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-2xl font-semibold text-black">Track a project by UIN</h1>
+        <p className="text-sm text-neutral-500">
           Enter the tracking number (UIN) you received when you contributed — no login needed.
         </p>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 flex gap-3">
           <input
-            className="flex-1 rounded border border-slate-300 px-3 py-2 font-mono"
+            className="flex-1 rounded border border-neutral-300 px-3 py-2 font-mono"
             placeholder="AXM-XXXXXXXXXX"
             value={uin}
             onChange={(e) => setUin(e.target.value)}
@@ -61,7 +61,7 @@ export default function TrackByUin() {
           <button
             type="submit"
             disabled={loading}
-            className="rounded bg-slate-900 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
+            className="rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
             {loading ? "Looking up..." : "Track"}
           </button>
@@ -75,18 +75,18 @@ export default function TrackByUin() {
               <div>
                 <Link
                   to={`/projects/${result.project.id}`}
-                  className="text-lg font-medium text-slate-900 underline"
+                  className="text-lg font-medium text-black underline"
                 >
                   {result.project.title}
                 </Link>
-                <p className="text-sm text-slate-500">{result.project.location}</p>
+                <p className="text-sm text-neutral-500">{result.project.location}</p>
               </div>
-              <span className="text-xs uppercase tracking-wide font-medium bg-slate-100 text-slate-700 px-2 py-1 rounded">
+              <span className="text-xs uppercase tracking-wide font-medium bg-neutral-100 text-neutral-700 px-2 py-1 rounded">
                 {result.project.status}
               </span>
             </div>
 
-            <div className="text-sm text-slate-700">
+            <div className="text-sm text-neutral-700">
               Your contribution:{" "}
               <span className="font-medium">
                 {money(result.contribution.amount, result.contribution.currency)}
@@ -95,17 +95,17 @@ export default function TrackByUin() {
             </div>
 
             <div>
-              <h2 className="font-medium text-slate-900 mb-2">Line-by-line status</h2>
+              <h2 className="font-medium text-black mb-2">Line-by-line status</h2>
               <ul className="space-y-2">
                 {result.lineItems.map((li) => (
-                  <li key={li.id} className="border border-slate-200 rounded p-3">
+                  <li key={li.id} className="border border-neutral-200 rounded p-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-900">{li.description}</span>
-                      <span className="text-slate-500">
+                      <span className="text-black">{li.description}</span>
+                      <span className="text-neutral-500">
                         {money(li.amount, result.project.currency)}
                       </span>
                     </div>
-                    <span className="mt-1 inline-block text-xs uppercase tracking-wide font-medium bg-slate-100 text-slate-700 px-2 py-1 rounded">
+                    <span className="mt-1 inline-block text-xs uppercase tracking-wide font-medium bg-neutral-100 text-neutral-700 px-2 py-1 rounded">
                       {STATUS_LABELS[li.status] ?? li.status}
                       {li.disputed ? " · flagged, disbursement frozen" : ""}
                     </span>

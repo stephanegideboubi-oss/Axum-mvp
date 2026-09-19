@@ -17,6 +17,14 @@ const STATUS_LABELS: Record<string, string> = {
   released: "Released to vendor",
 };
 
+const PROJECT_STATUS_BADGE: Record<string, string> = {
+  draft: "bg-neutral-100 text-neutral-700",
+  open: "bg-orange-100 text-orange-800",
+  funded: "bg-green-100 text-green-800",
+  closed: "bg-neutral-800 text-white",
+  failed: "bg-red-100 text-red-700",
+};
+
 function money(amount: string | number, currency: string) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(Number(amount));
 }
@@ -128,7 +136,7 @@ export default function ProjectDetail() {
     }
   }
 
-  if (loading) return <div className="p-8 text-slate-500">Loading...</div>;
+  if (loading) return <div className="p-8 text-neutral-500">Loading...</div>;
   if (!project) return <div className="p-8 text-red-600">{error ?? "Project not found"}</div>;
 
   const isOwner = user?.id === project.entrepreneur_id;
@@ -137,32 +145,36 @@ export default function ProjectDetail() {
   const progressPct = Math.min(100, Math.round((raised / goalAmount) * 100));
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10">
+    <div className="min-h-screen bg-neutral-50 py-10">
       <div className="max-w-3xl mx-auto space-y-6">
-        <Link to="/projects" className="text-sm text-slate-600 underline">
+        <Link to="/projects" className="text-sm text-neutral-600 underline">
           &larr; Back to projects
         </Link>
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-2xl font-semibold text-slate-900">{project.title}</h1>
-              <p className="text-sm text-slate-500">{project.location}</p>
+              <h1 className="text-2xl font-semibold text-black">{project.title}</h1>
+              <p className="text-sm text-neutral-500">{project.location}</p>
             </div>
-            <span className="text-xs uppercase tracking-wide font-medium bg-slate-100 text-slate-700 px-2 py-1 rounded">
+            <span
+              className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded ${
+                PROJECT_STATUS_BADGE[project.status] ?? "bg-neutral-100 text-neutral-700"
+              }`}
+            >
               {project.status}
             </span>
           </div>
-          <p className="mt-4 text-slate-700 whitespace-pre-wrap">{project.description}</p>
+          <p className="mt-4 text-neutral-700 whitespace-pre-wrap">{project.description}</p>
 
           {project.status !== "draft" && (
             <div className="mt-6">
-              <div className="flex justify-between text-sm text-slate-600">
+              <div className="flex justify-between text-sm text-neutral-600">
                 <span>{money(raised, project.currency)} raised</span>
                 <span>Goal: {money(project.goal_amount, project.currency)}</span>
               </div>
-              <div className="mt-1 h-2 bg-slate-200 rounded overflow-hidden">
-                <div className="h-full bg-slate-900" style={{ width: `${progressPct}%` }} />
+              <div className="mt-1 h-2 bg-neutral-200 rounded overflow-hidden">
+                <div className="h-full bg-orange-600" style={{ width: `${progressPct}%` }} />
               </div>
             </div>
           )}
@@ -185,9 +197,9 @@ export default function ProjectDetail() {
           )}
 
           {user?.role === "contributor" && project.status === "open" && (
-            <form onSubmit={handleContribute} className="mt-6 border-t border-slate-200 pt-6">
-              <h3 className="font-medium text-slate-900 mb-2">Contribute to this project</h3>
-              <p className="text-xs text-slate-500 mb-3">
+            <form onSubmit={handleContribute} className="mt-6 border-t border-neutral-200 pt-6">
+              <h3 className="font-medium text-black mb-2">Contribute to this project</h3>
+              <p className="text-xs text-neutral-500 mb-3">
                 Simulated for this MVP — no real payment is taken, and no real money moves yet.
               </p>
               <div className="flex gap-3">
@@ -197,14 +209,14 @@ export default function ProjectDetail() {
                   step="0.01"
                   required
                   placeholder="Amount (USD)"
-                  className="flex-1 rounded border border-slate-300 px-3 py-2"
+                  className="flex-1 rounded border border-neutral-300 px-3 py-2"
                   value={contributionAmount}
                   onChange={(e) => setContributionAmount(e.target.value)}
                 />
                 <button
                   type="submit"
                   disabled={contributing}
-                  className="rounded bg-slate-900 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
+                  className="rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
                 >
                   {contributing ? "Contributing..." : "Contribute"}
                 </button>
@@ -216,22 +228,22 @@ export default function ProjectDetail() {
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-3">Budget line items</h2>
+          <h2 className="text-lg font-semibold text-black mb-3">Budget line items</h2>
           {lineItems.length === 0 && (
-            <p className="text-sm text-slate-500">No line items yet.</p>
+            <p className="text-sm text-neutral-500">No line items yet.</p>
           )}
           <ul className="space-y-3">
             {lineItems.map((li) => (
-              <li key={li.id} className="border border-slate-200 rounded p-4">
+              <li key={li.id} className="border border-neutral-200 rounded p-4">
                 <div className="flex justify-between">
-                  <span className="font-medium text-slate-900">{li.description}</span>
-                  <span className="text-slate-900">{money(li.amount, project.currency)}</span>
+                  <span className="font-medium text-black">{li.description}</span>
+                  <span className="text-black">{money(li.amount, project.currency)}</span>
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-neutral-500">
                   {li.category} · {li.location} · qty {li.quantity} @ {money(li.unit_cost, project.currency)}
                 </p>
                 {project.status !== "draft" && (
-                  <span className="mt-2 inline-block text-xs uppercase tracking-wide font-medium bg-slate-100 text-slate-700 px-2 py-1 rounded">
+                  <span className="mt-2 inline-block text-xs uppercase tracking-wide font-medium bg-neutral-100 text-neutral-700 px-2 py-1 rounded">
                     {STATUS_LABELS[li.status] ?? li.status}
                     {li.disputed ? " · flagged, disbursement frozen" : ""}
                   </span>
@@ -245,25 +257,25 @@ export default function ProjectDetail() {
 
           {isOwner && project.status === "draft" && (
             <>
-              <form onSubmit={handleAddLineItem} className="mt-6 space-y-3 border-t border-slate-200 pt-6">
-                <h3 className="font-medium text-slate-900">Add a line item</h3>
+              <form onSubmit={handleAddLineItem} className="mt-6 space-y-3 border-t border-neutral-200 pt-6">
+                <h3 className="font-medium text-black">Add a line item</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <input
-                    className="rounded border border-slate-300 px-3 py-2 col-span-2"
+                    className="rounded border border-neutral-300 px-3 py-2 col-span-2"
                     placeholder="Description (e.g. 500 bricks)"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     required
                   />
                   <input
-                    className="rounded border border-slate-300 px-3 py-2"
+                    className="rounded border border-neutral-300 px-3 py-2"
                     placeholder="Category (e.g. Materials)"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     required
                   />
                   <input
-                    className="rounded border border-slate-300 px-3 py-2"
+                    className="rounded border border-neutral-300 px-3 py-2"
                     placeholder="Location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
@@ -273,7 +285,7 @@ export default function ProjectDetail() {
                     type="number"
                     min="0.01"
                     step="0.01"
-                    className="rounded border border-slate-300 px-3 py-2"
+                    className="rounded border border-neutral-300 px-3 py-2"
                     placeholder="Quantity"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
@@ -283,7 +295,7 @@ export default function ProjectDetail() {
                     type="number"
                     min="0.01"
                     step="0.01"
-                    className="rounded border border-slate-300 px-3 py-2"
+                    className="rounded border border-neutral-300 px-3 py-2"
                     placeholder="Unit cost (USD)"
                     value={unitCost}
                     onChange={(e) => setUnitCost(e.target.value)}
@@ -293,7 +305,7 @@ export default function ProjectDetail() {
                 <button
                   type="submit"
                   disabled={addingItem}
-                  className="rounded bg-slate-900 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
+                  className="rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
                 >
                   {addingItem ? "Adding..." : "Add line item"}
                 </button>

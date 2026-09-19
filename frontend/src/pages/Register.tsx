@@ -41,14 +41,14 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50">
       <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white p-8 rounded-lg shadow space-y-4">
-        <h1 className="text-2xl font-semibold text-slate-900">Create account</h1>
+        <h1 className="text-2xl font-semibold text-black">Create account</h1>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700">Name</label>
+          <label className="block text-sm font-medium text-neutral-700">Name</label>
           <input
-            className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+            className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -56,10 +56,10 @@ export default function Register() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700">Email</label>
+          <label className="block text-sm font-medium text-neutral-700">Email</label>
           <input
             type="email"
-            className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+            className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -67,11 +67,11 @@ export default function Register() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700">Password</label>
+          <label className="block text-sm font-medium text-neutral-700">Password</label>
           <input
             type="password"
             minLength={8}
-            className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+            className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -79,9 +79,9 @@ export default function Register() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700">I am a...</label>
+          <label className="block text-sm font-medium text-neutral-700">I am a...</label>
           <select
-            className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+            className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
             value={role}
             onChange={(e) => setRole(e.target.value as UserRole)}
           >
@@ -95,17 +95,17 @@ export default function Register() {
 
         {role === "vendor" && (
           <div>
-            <label className="block text-sm font-medium text-slate-700">
+            <label className="block text-sm font-medium text-neutral-700">
               Business registration info
             </label>
             <input
-              className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+              className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
               placeholder="e.g. Registered LLC #12345, city, country"
               value={businessRegistrationInfo}
               onChange={(e) => setBusinessRegistrationInfo(e.target.value)}
               required
             />
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-neutral-500">
               An admin reviews this before you can bid on any project — see it as "pending" on
               your dashboard until then.
             </p>
@@ -117,14 +117,14 @@ export default function Register() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded bg-slate-900 text-white py-2 font-medium disabled:opacity-50"
+          className="w-full rounded bg-orange-600 hover:bg-orange-700 text-white py-2 font-medium disabled:opacity-50"
         >
           {submitting ? "Creating account..." : "Create account"}
         </button>
 
-        <p className="text-sm text-slate-600 text-center">
+        <p className="text-sm text-neutral-600 text-center">
           Already have an account?{" "}
-          <Link to="/login" className="text-slate-900 underline">
+          <Link to="/login" className="text-black underline">
             Log in
           </Link>
         </p>

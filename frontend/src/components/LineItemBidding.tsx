@@ -94,13 +94,13 @@ export default function LineItemBidding({
   if (project.status !== "funded") return null;
 
   return (
-    <div className="mt-3 border-t border-slate-100 pt-3">
+    <div className="mt-3 border-t border-neutral-100 pt-3">
       {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
 
       {bids.length > 0 && (
         <button
           onClick={() => setShowBids((v) => !v)}
-          className="text-xs text-slate-600 underline mb-2"
+          className="text-xs text-neutral-600 underline mb-2"
         >
           {showBids ? "Hide bids" : `View bids (${bids.length})`}
         </button>
@@ -109,13 +109,13 @@ export default function LineItemBidding({
       {showBids && (
         <ul className="space-y-2 mb-3">
           {bids.map((b) => (
-            <li key={b.id} className="flex justify-between items-start bg-slate-50 rounded p-2 text-xs">
+            <li key={b.id} className="flex justify-between items-start bg-neutral-50 rounded p-2 text-xs">
               <div>
-                <p className="font-medium text-slate-900">
+                <p className="font-medium text-black">
                   {b.vendor_name} — {money(b.amount, project.currency)}
                 </p>
-                <p className="text-slate-600">{b.notes}</p>
-                <span className="uppercase tracking-wide text-slate-500">{b.status}</span>
+                <p className="text-neutral-600">{b.notes}</p>
+                <span className="uppercase tracking-wide text-neutral-500">{b.status}</span>
               </div>
               {canReview && b.status === "submitted" && (
                 <div className="flex gap-2 shrink-0 ml-2">
@@ -129,7 +129,7 @@ export default function LineItemBidding({
                   <button
                     onClick={() => handleReject(b.id)}
                     disabled={actingOn === b.id}
-                    className="rounded border border-slate-300 px-2 py-1 disabled:opacity-50"
+                    className="rounded border border-neutral-300 px-2 py-1 disabled:opacity-50"
                   >
                     Reject
                   </button>
@@ -155,14 +155,14 @@ export default function LineItemBidding({
               step="0.01"
               required
               placeholder="Bid amount (USD)"
-              className="rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="rounded border border-neutral-300 px-2 py-1.5 text-sm"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
             <input
               required
               placeholder="Notes / proposal"
-              className="rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="rounded border border-neutral-300 px-2 py-1.5 text-sm"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -170,7 +170,7 @@ export default function LineItemBidding({
           <button
             type="submit"
             disabled={submitting}
-            className="rounded bg-slate-900 text-white px-3 py-1.5 text-xs font-medium disabled:opacity-50"
+            className="rounded bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 text-xs font-medium disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Submit bid"}
           </button>
@@ -178,7 +178,7 @@ export default function LineItemBidding({
       )}
 
       {myBid && (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-neutral-500">
           Your bid: {money(myBid.amount, project.currency)} — status: {myBid.status}
         </p>
       )}

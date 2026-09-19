@@ -43,12 +43,12 @@ export default function DisputePanel({
   }
 
   return (
-    <div className="mt-3 border-t border-slate-100 pt-3 text-xs">
+    <div className="mt-3 border-t border-neutral-100 pt-3 text-xs">
       {result && <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-2">{result}</p>}
       {error && <p className="text-red-600 mb-2">{error}</p>}
 
       {!open && !result && (
-        <button onClick={() => setOpen(true)} className="text-slate-500 underline">
+        <button onClick={() => setOpen(true)} className="text-neutral-500 underline">
           Flag this line item as suspicious
         </button>
       )}
@@ -58,7 +58,7 @@ export default function DisputePanel({
           <textarea
             required
             placeholder="Why does this look suspicious?"
-            className="w-full rounded border border-slate-300 px-2 py-1.5"
+            className="w-full rounded border border-neutral-300 px-2 py-1.5"
             rows={2}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -74,7 +74,7 @@ export default function DisputePanel({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="rounded border border-slate-300 px-3 py-1.5"
+              className="rounded border border-neutral-300 px-3 py-1.5"
             >
               Cancel
             </button>

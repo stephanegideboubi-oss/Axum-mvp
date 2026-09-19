@@ -50,30 +50,30 @@ export default function AdminDisputes() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10">
+    <div className="min-h-screen bg-neutral-50 py-10">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-slate-900">Open disputes</h1>
-          <Link to="/admin" className="text-sm text-slate-600 underline">
+          <h1 className="text-2xl font-semibold text-black">Open disputes</h1>
+          <Link to="/admin" className="text-sm text-neutral-600 underline">
             Vendor verification
           </Link>
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
-        {loading && <p className="text-sm text-slate-500">Loading...</p>}
+        {loading && <p className="text-sm text-neutral-500">Loading...</p>}
         {!loading && disputes.length === 0 && (
-          <p className="text-sm text-slate-500">No open disputes.</p>
+          <p className="text-sm text-neutral-500">No open disputes.</p>
         )}
 
         <ul className="space-y-4">
           {disputes.map((d) => (
             <li key={d.id} className="bg-white rounded-lg shadow p-5 space-y-3">
               <div>
-                <Link to={`/projects/${d.project_id}`} className="font-medium text-slate-900 underline">
+                <Link to={`/projects/${d.project_id}`} className="font-medium text-black underline">
                   {d.line_item_description}
                 </Link>
-                <p className="text-sm text-slate-600 mt-1">"{d.reason}"</p>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-sm text-neutral-600 mt-1">"{d.reason}"</p>
+                <p className="text-xs text-neutral-400 mt-1">
                   Flagged {new Date(d.created_at).toLocaleString()}
                 </p>
               </div>
@@ -82,14 +82,14 @@ export default function AdminDisputes() {
                 <textarea
                   required
                   placeholder="Resolution notes"
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
                   rows={2}
                   value={notesByDispute[d.id] ?? ""}
                   onChange={(e) =>
                     setNotesByDispute((prev) => ({ ...prev, [d.id]: e.target.value }))
                   }
                 />
-                <label className="flex items-center gap-2 text-sm text-slate-600">
+                <label className="flex items-center gap-2 text-sm text-neutral-600">
                   <input
                     type="checkbox"
                     checked={!!unfreezeByDispute[d.id]}
@@ -102,7 +102,7 @@ export default function AdminDisputes() {
                 <button
                   type="submit"
                   disabled={actingOn === d.id}
-                  className="rounded bg-slate-900 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
+                  className="rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
                 >
                   {actingOn === d.id ? "Resolving..." : "Mark resolved"}
                 </button>

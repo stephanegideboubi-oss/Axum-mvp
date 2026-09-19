@@ -44,29 +44,29 @@ export default function AdminVendors() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10">
+    <div className="min-h-screen bg-neutral-50 py-10">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-slate-900">Vendor verification</h1>
-          <Link to="/admin/disputes" className="text-sm text-slate-600 underline">
+          <h1 className="text-2xl font-semibold text-black">Vendor verification</h1>
+          <Link to="/admin/disputes" className="text-sm text-neutral-600 underline">
             Disputes
           </Link>
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
-        {loading && <p className="text-sm text-slate-500">Loading...</p>}
+        {loading && <p className="text-sm text-neutral-500">Loading...</p>}
         {!loading && vendors.length === 0 && (
-          <p className="text-sm text-slate-500">No vendors have registered yet.</p>
+          <p className="text-sm text-neutral-500">No vendors have registered yet.</p>
         )}
 
         <ul className="space-y-3">
           {vendors.map((v) => (
             <li key={v.id} className="bg-white rounded-lg shadow p-5 flex justify-between items-start">
               <div>
-                <p className="font-medium text-slate-900">{v.name}</p>
-                <p className="text-sm text-slate-500">{v.email}</p>
-                <p className="text-xs text-slate-500 mt-1">{v.business_registration_info}</p>
-                <span className="mt-2 inline-block text-xs uppercase tracking-wide font-medium bg-slate-100 text-slate-700 px-2 py-1 rounded">
+                <p className="font-medium text-black">{v.name}</p>
+                <p className="text-sm text-neutral-500">{v.email}</p>
+                <p className="text-xs text-neutral-500 mt-1">{v.business_registration_info}</p>
+                <span className="mt-2 inline-block text-xs uppercase tracking-wide font-medium bg-neutral-100 text-neutral-700 px-2 py-1 rounded">
                   {v.verification_status}
                 </span>
               </div>
@@ -82,7 +82,7 @@ export default function AdminVendors() {
                   <button
                     onClick={() => handleVerify(v.id, "rejected")}
                     disabled={actingOn === v.id}
-                    className="rounded border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-50"
+                    className="rounded border border-neutral-300 px-3 py-1.5 text-sm disabled:opacity-50"
                   >
                     Reject
                   </button>
