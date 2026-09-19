@@ -17,8 +17,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules/serve ./node_modules/serve
-COPY --from=build /app/package.json ./package.json
+COPY package*.json ./
+RUN npm install --omit=dev
 
 EXPOSE 3000
 CMD ["sh", "-c", "npx serve -s dist -l ${PORT:-3000}"]
