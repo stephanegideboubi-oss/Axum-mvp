@@ -126,7 +126,10 @@ export default function LineItemBidding({
             <li key={b.id} className="flex justify-between items-start bg-neutral-50 rounded p-2 text-xs">
               <div>
                 <p className="font-medium text-black">
-                  {b.vendor_name} — {money(b.amount, project.currency)}
+                  <Link to={`/vendors/${b.vendor_id}`} className="text-orange-700 underline">
+                    {b.vendor_name}
+                  </Link>{" "}
+                  — {money(b.amount, project.currency)}
                 </p>
                 <p className="text-neutral-600">{b.notes}</p>
                 <span className="uppercase tracking-wide text-neutral-500">{b.status}</span>
