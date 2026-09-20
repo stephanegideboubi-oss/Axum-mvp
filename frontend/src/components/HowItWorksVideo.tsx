@@ -1,4 +1,5 @@
-const VIDEO_URL = import.meta.env.VITE_HOW_IT_WORKS_VIDEO_URL as string | undefined;
+// Falls back to the bundled explainer video; override with an env var to swap in a hosted link instead.
+const VIDEO_URL = (import.meta.env.VITE_HOW_IT_WORKS_VIDEO_URL as string | undefined) || "/how-it-works.mp4";
 
 function isEmbeddable(url: string) {
   return /youtube\.com|youtu\.be|vimeo\.com/.test(url);
