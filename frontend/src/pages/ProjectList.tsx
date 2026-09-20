@@ -22,6 +22,7 @@ export default function ProjectList() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     setLoading(true);
@@ -30,6 +31,13 @@ export default function ProjectList() {
       .catch((err) => setError(err?.response?.data?.error ?? "Could not load projects"))
       .finally(() => setLoading(false));
   }, [mineOnly]);
+
+  const query = search.trim().toLowerCase();
+  const filteredProjects = query
+    ? projects.filter(
+        (p) => p.title.toLowerCase().includes(query) || p.location.toLowerCase().includes(query)
+      )
+    : projects;
 
   return (
     <div className="min-h-screen bg-neutral-50 py-10">
@@ -56,14 +64,25 @@ export default function ProjectList() {
           </div>
         </div>
 
+        <input
+          type="search"
+          placeholder="Search by project name, country, city..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded border border-neutral-300 px-4 py-2.5 bg-white"
+        />
+
         {error && <p className="text-sm text-red-600">{error}</p>}
         {loading && <p className="text-sm text-neutral-500">Loading...</p>}
         {!loading && projects.length === 0 && (
           <p className="text-sm text-neutral-500">No projects to show yet.</p>
         )}
+        {!loading && projects.length > 0 && filteredProjects.length === 0 && (
+          <p className="text-sm text-neutral-500">No projects match "{search}".</p>
+        )}
 
         <ul className="space-y-4">
-          {projects.map((p) => {
+          {filteredProjects.map((p) => {
             const goal = Number(p.goal_amount);
             const raised = p.raised_amount ?? 0;
             const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
