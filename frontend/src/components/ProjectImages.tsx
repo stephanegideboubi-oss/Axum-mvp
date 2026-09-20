@@ -1,5 +1,6 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { addProjectImage, deleteProjectImage } from "../api/projects";
+import { useFileUpload } from "../hooks/useFileUpload";
 import { ProjectImage } from "../types/project";
 
 export default function ProjectImages({
@@ -13,25 +14,30 @@ export default function ProjectImages({
   isOwner: boolean;
   onChanged: () => void;
 }) {
-  const [imageUrl, setImageUrl] = useState("");
+  const { upload, uploading, error: uploadError, setError: setUploadError } = useFileUpload();
+  const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [adding, setAdding] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOwner && images.length === 0) return null;
 
   async function handleAdd(e: FormEvent) {
     e.preventDefault();
+    if (!file) return;
     setAdding(true);
     setError(null);
     try {
+      const imageUrl = await upload(file);
       await addProjectImage(projectId, { imageUrl, caption: caption || undefined });
-      setImageUrl("");
+      setFile(null);
       setCaption("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
       onChanged();
     } catch (err: any) {
-      setError(err?.response?.data?.error ?? "Could not add this photo");
+      setError(err?.response?.data?.error ?? uploadError ?? "Could not add this photo");
     } finally {
       setAdding(false);
     }
@@ -53,7 +59,9 @@ export default function ProjectImages({
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h2 className="text-lg font-semibold text-black mb-4">Photos</h2>
-      {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
+      {(error || uploadError) && (
+        <p className="text-sm text-red-600 mb-2">{error ?? uploadError}</p>
+      )}
 
       {images.length === 0 && (
         <p className="text-sm text-neutral-500 mb-3">No photos added yet.</p>
@@ -84,11 +92,15 @@ export default function ProjectImages({
       {isOwner && (
         <form onSubmit={handleAdd} className="space-y-2 border-t border-neutral-200 pt-4">
           <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
             required
-            placeholder="Image URL"
-            className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
+            className="w-full text-sm"
+            onChange={(e) => {
+              setFile(e.target.files?.[0] ?? null);
+              setUploadError(null);
+            }}
           />
           <input
             placeholder="Caption (optional)"
@@ -98,10 +110,10 @@ export default function ProjectImages({
           />
           <button
             type="submit"
-            disabled={adding}
+            disabled={adding || uploading || !file}
             className="rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
-            {adding ? "Adding..." : "Add photo"}
+            {uploading ? "Uploading..." : adding ? "Adding..." : "Add photo"}
           </button>
         </form>
       )}

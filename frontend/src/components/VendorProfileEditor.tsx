@@ -1,7 +1,8 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { addPortfolioImage, deletePortfolioImage, getVendorProfile, updateMyVendorProfile } from "../api/vendors";
 import { useAuth } from "../context/AuthContext";
+import { useFileUpload } from "../hooks/useFileUpload";
 import { VendorPortfolioImage } from "../types/vendor";
 
 export default function VendorProfileEditor() {
@@ -12,10 +13,12 @@ export default function VendorProfileEditor() {
   const [bioSaved, setBioSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [imageUrl, setImageUrl] = useState("");
+  const { upload, uploading, error: uploadError, setError: setUploadError } = useFileUpload();
+  const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [addingImage, setAddingImage] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     if (!user) return;
@@ -50,15 +53,18 @@ export default function VendorProfileEditor() {
 
   async function handleAddImage(e: FormEvent) {
     e.preventDefault();
+    if (!file) return;
     setAddingImage(true);
     setError(null);
     try {
+      const imageUrl = await upload(file);
       await addPortfolioImage({ imageUrl, caption: caption || undefined });
-      setImageUrl("");
+      setFile(null);
       setCaption("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
       await load();
     } catch (err: any) {
-      setError(err?.response?.data?.error ?? "Could not add this image");
+      setError(err?.response?.data?.error ?? uploadError ?? "Could not add this image");
     } finally {
       setAddingImage(false);
     }
@@ -118,7 +124,7 @@ export default function VendorProfileEditor() {
         <h4 className="font-medium text-black mb-3">Portfolio — showcase your work</h4>
         {portfolio.length === 0 && (
           <p className="text-sm text-neutral-500 mb-3">
-            No photos yet — add a link to a photo of past work below.
+            No photos yet — upload a photo of past work below.
           </p>
         )}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
@@ -141,13 +147,18 @@ export default function VendorProfileEditor() {
           ))}
         </div>
 
+        {(uploadError) && <p className="text-sm text-red-600 mb-2">{uploadError}</p>}
         <form onSubmit={handleAddImage} className="space-y-2">
           <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
             required
-            placeholder="Image URL"
-            className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
+            className="w-full text-sm"
+            onChange={(e) => {
+              setFile(e.target.files?.[0] ?? null);
+              setUploadError(null);
+            }}
           />
           <input
             placeholder="Caption (optional)"
@@ -157,10 +168,10 @@ export default function VendorProfileEditor() {
           />
           <button
             type="submit"
-            disabled={addingImage}
+            disabled={addingImage || uploading || !file}
             className="rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
-            {addingImage ? "Adding..." : "Add photo"}
+            {uploading ? "Uploading..." : addingImage ? "Adding..." : "Add photo"}
           </button>
         </form>
       </div>

@@ -9,6 +9,7 @@ import { bidsRouter, lineItemBidsRouter } from "./routes/bids";
 import { contributionsRouter } from "./routes/contributions";
 import { disputesRouter } from "./routes/disputes";
 import { projectsRouter } from "./routes/projects";
+import { uploadsRouter } from "./routes/uploads";
 import { usersRouter } from "./routes/users";
 import { vendorsRouter } from "./routes/vendors";
 
@@ -29,6 +30,7 @@ app.use("/audit-log", auditLogRouter);
 app.use("/admin", adminRouter);
 app.use("/disputes", disputesRouter);
 app.use("/vendors", vendorsRouter);
+app.use("/uploads", uploadsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
