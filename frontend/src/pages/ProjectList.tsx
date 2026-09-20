@@ -1,20 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { listProjects } from "../api/projects";
+import ProjectCard from "../components/ProjectCard";
 import { useAuth } from "../context/AuthContext";
 import { Project } from "../types/project";
-
-function money(amount: string | number, currency: string) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(Number(amount));
-}
-
-const STATUS_BADGE: Record<string, string> = {
-  draft: "bg-neutral-100 text-neutral-700",
-  open: "bg-orange-100 text-orange-800",
-  funded: "bg-green-100 text-green-800",
-  closed: "bg-neutral-800 text-white",
-  failed: "bg-red-100 text-red-700",
-};
 
 export default function ProjectList() {
   const { user } = useAuth();
@@ -46,7 +35,7 @@ export default function ProjectList() {
 
   return (
     <div className="min-h-screen bg-neutral-50 py-10">
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto px-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold text-black">Projects</h1>
           <div className="flex gap-3">
@@ -86,46 +75,11 @@ export default function ProjectList() {
           <p className="text-sm text-neutral-500">No projects match "{search}".</p>
         )}
 
-        <ul className="space-y-4">
-          {filteredProjects.map((p) => {
-            const goal = Number(p.goal_amount);
-            const raised = p.raised_amount ?? 0;
-            const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
-            return (
-              <li key={p.id} className="bg-white rounded-lg shadow p-5">
-                <Link to={`/projects/${p.id}`} className="block">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h2 className="text-lg font-medium text-black">{p.title}</h2>
-                      <p className="text-sm text-neutral-500">
-                        {p.location}
-                        {p.country ? `, ${p.country}` : ""}
-                      </p>
-                    </div>
-                    <span
-                      className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded ${
-                        STATUS_BADGE[p.status] ?? "bg-neutral-100 text-neutral-700"
-                      }`}
-                    >
-                      {p.status}
-                    </span>
-                  </div>
-                  {p.status !== "draft" && (
-                    <div className="mt-3">
-                      <div className="flex justify-between text-xs text-neutral-600">
-                        <span>{money(raised, p.currency)} raised</span>
-                        <span>Goal: {money(p.goal_amount, p.currency)}</span>
-                      </div>
-                      <div className="mt-1 h-1.5 bg-neutral-200 rounded overflow-hidden">
-                        <div className="h-full bg-orange-600" style={{ width: `${pct}%` }} />
-                      </div>
-                    </div>
-                  )}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProjects.map((p) => (
+            <ProjectCard key={p.id} project={p} />
+          ))}
+        </div>
       </div>
     </div>
   );
