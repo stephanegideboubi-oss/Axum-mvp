@@ -13,6 +13,7 @@ export interface Project {
   currency: string;
   status: ProjectStatus;
   raised_amount?: number;
+  cover_image_url?: string | null;
   created_at: string;
   updated_at: string;
 }

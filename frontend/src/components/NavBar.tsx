@@ -6,7 +6,7 @@ export default function NavBar() {
 
   return (
     <header className="bg-black px-6 py-4 flex justify-between items-center">
-      <Link to="/projects" className="text-lg font-bold text-white tracking-wide">
+      <Link to="/" className="text-lg font-bold text-white tracking-wide">
         AX<span className="text-orange-500">UM</span>
       </Link>
       <div className="flex items-center gap-5">

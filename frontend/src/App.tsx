@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
@@ -6,6 +6,7 @@ import AdminDisputes from "./pages/AdminDisputes";
 import AdminVendors from "./pages/AdminVendors";
 import CreateProject from "./pages/CreateProject";
 import Dashboard from "./pages/Dashboard";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import MyContributions from "./pages/MyContributions";
 import ProjectDetail from "./pages/ProjectDetail";
@@ -20,7 +21,7 @@ export default function App() {
     <AuthProvider>
       <NavBar />
       <Routes>
-        <Route path="/" element={<Navigate to="/projects" replace />} />
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route

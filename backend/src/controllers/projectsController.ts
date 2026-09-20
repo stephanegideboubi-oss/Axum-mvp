@@ -225,11 +225,15 @@ export async function markProjectFailed(req: Request, res: Response) {
 }
 
 const PROJECTS_WITH_RAISED = `
-  SELECT p.*, COALESCE(c.raised, 0) AS raised_amount
+  SELECT p.*, COALESCE(c.raised, 0) AS raised_amount, i.cover_image_url
   FROM projects p
   LEFT JOIN (
     SELECT project_id, SUM(amount) AS raised FROM contributions WHERE status = 'recorded' GROUP BY project_id
   ) c ON c.project_id = p.id
+  LEFT JOIN LATERAL (
+    SELECT image_url AS cover_image_url FROM project_images
+    WHERE project_id = p.id ORDER BY created_at ASC LIMIT 1
+  ) i ON true
 `;
 
 export async function listProjects(req: Request, res: Response) {
