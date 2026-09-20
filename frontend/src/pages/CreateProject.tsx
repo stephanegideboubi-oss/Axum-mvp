@@ -1,12 +1,15 @@
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createProject } from "../api/projects";
+import { COUNTRIES } from "../constants/countries";
 
 export default function CreateProject() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
+  const [country, setCountry] = useState("");
+  const [zipCode, setZipCode] = useState("");
   const [goalAmount, setGoalAmount] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -20,6 +23,8 @@ export default function CreateProject() {
         title,
         description,
         location,
+        country,
+        zipCode: zipCode || undefined,
         goalAmount: Number(goalAmount),
       });
       navigate(`/projects/${project.id}`);
@@ -38,7 +43,7 @@ export default function CreateProject() {
       >
         <h1 className="text-2xl font-semibold text-black">Start a new project</h1>
         <p className="text-sm text-neutral-500">
-          After this, you'll add your budget line by line before publishing.
+          After this, you'll add your budget line by line and can upload photos before publishing.
         </p>
 
         <div>
@@ -63,14 +68,45 @@ export default function CreateProject() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-neutral-700">Location</label>
+          <label className="block text-sm font-medium text-neutral-700">City / Region</label>
           <input
             className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
-            placeholder="City, country"
+            placeholder="e.g. Kisumu County"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             required
           />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700">Country</label>
+            <select
+              className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 bg-white"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              required
+            >
+              <option value="" disabled>
+                Select a country
+              </option>
+              {COUNTRIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700">
+              Zip / postal code <span className="text-neutral-400">(optional)</span>
+            </label>
+            <input
+              className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
+              value={zipCode}
+              onChange={(e) => setZipCode(e.target.value)}
+            />
+          </div>
         </div>
 
         <div>

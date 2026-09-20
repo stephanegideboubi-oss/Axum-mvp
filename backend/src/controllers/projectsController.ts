@@ -8,6 +8,8 @@ const createProjectSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   location: z.string().min(1),
+  country: z.string().min(1),
+  zipCode: z.string().optional(),
   goalAmount: z.number().positive(),
   currency: z.string().length(3).optional(),
 });
@@ -31,15 +33,15 @@ export async function createProject(req: Request, res: Response) {
   if (!parsed.success) {
     throw new HttpError(400, parsed.error.issues.map((i) => i.message).join(", "));
   }
-  const { title, description, location, goalAmount, currency } = parsed.data;
+  const { title, description, location, country, zipCode, goalAmount, currency } = parsed.data;
 
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
     const result = await client.query(
-      `INSERT INTO projects (entrepreneur_id, title, description, location, goal_amount, currency)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [req.user!.sub, title, description, location, goalAmount, currency ?? "USD"]
+      `INSERT INTO projects (entrepreneur_id, title, description, location, country, zip_code, goal_amount, currency)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [req.user!.sub, title, description, location, country, zipCode ?? null, goalAmount, currency ?? "USD"]
     );
     const project = result.rows[0];
     await appendAuditLog(client, {
@@ -262,11 +264,53 @@ export async function getProject(req: Request, res: Response) {
     `SELECT COALESCE(SUM(amount), 0) AS raised FROM contributions WHERE project_id = $1 AND status = 'recorded'`,
     [project.id]
   );
+  const images = await pool.query(
+    "SELECT * FROM project_images WHERE project_id = $1 ORDER BY created_at ASC",
+    [project.id]
+  );
 
   res.json({
     project: { ...project, raised_amount: Number(raised.rows[0].raised) },
     lineItems: lineItems.rows,
+    images: images.rows,
   });
+}
+
+const projectImageSchema = z.object({
+  imageUrl: z.string().min(1),
+  caption: z.string().max(500).optional(),
+});
+
+export async function addProjectImage(req: Request, res: Response) {
+  const parsed = projectImageSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new HttpError(400, parsed.error.issues.map((i) => i.message).join(", "));
+  }
+  const project = await loadProjectOr404(req.params.id);
+  if (project.entrepreneur_id !== req.user!.sub) {
+    throw new HttpError(403, "Only the project owner can add photos to this project");
+  }
+
+  const { imageUrl, caption } = parsed.data;
+  const result = await pool.query(
+    `INSERT INTO project_images (project_id, image_url, caption) VALUES ($1, $2, $3) RETURNING *`,
+    [project.id, imageUrl, caption ?? null]
+  );
+  res.status(201).json({ image: result.rows[0] });
+}
+
+export async function deleteProjectImage(req: Request, res: Response) {
+  const project = await loadProjectOr404(req.params.id);
+  if (project.entrepreneur_id !== req.user!.sub) {
+    throw new HttpError(403, "Only the project owner can remove photos from this project");
+  }
+
+  const result = await pool.query(
+    "DELETE FROM project_images WHERE id = $1 AND project_id = $2 RETURNING id",
+    [req.params.imageId, project.id]
+  );
+  if (!result.rows[0]) throw new HttpError(404, "Project image not found");
+  res.status(204).send();
 }
 
 // Owner-facing analytics: funding progress, per-line bid activity, and the

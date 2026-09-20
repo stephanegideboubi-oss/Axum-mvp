@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import { BudgetLineItem, Project, ProjectAnalytics } from "../types/project";
+import { BudgetLineItem, Project, ProjectAnalytics, ProjectImage } from "../types/project";
 
 export async function listProjects(mine = false): Promise<Project[]> {
   const { data } = await apiClient.get<{ projects: Project[] }>("/projects", {
@@ -8,10 +8,14 @@ export async function listProjects(mine = false): Promise<Project[]> {
   return data.projects;
 }
 
-export async function getProject(id: string): Promise<{ project: Project; lineItems: BudgetLineItem[] }> {
-  const { data } = await apiClient.get<{ project: Project; lineItems: BudgetLineItem[] }>(
-    `/projects/${id}`
-  );
+export async function getProject(
+  id: string
+): Promise<{ project: Project; lineItems: BudgetLineItem[]; images: ProjectImage[] }> {
+  const { data } = await apiClient.get<{
+    project: Project;
+    lineItems: BudgetLineItem[];
+    images: ProjectImage[];
+  }>(`/projects/${id}`);
   return data;
 }
 
@@ -19,10 +23,27 @@ export async function createProject(params: {
   title: string;
   description: string;
   location: string;
+  country: string;
+  zipCode?: string;
   goalAmount: number;
 }): Promise<Project> {
   const { data } = await apiClient.post<{ project: Project }>("/projects", params);
   return data.project;
+}
+
+export async function addProjectImage(
+  projectId: string,
+  params: { imageUrl: string; caption?: string }
+): Promise<ProjectImage> {
+  const { data } = await apiClient.post<{ image: ProjectImage }>(
+    `/projects/${projectId}/images`,
+    params
+  );
+  return data.image;
+}
+
+export async function deleteProjectImage(projectId: string, imageId: string): Promise<void> {
+  await apiClient.delete(`/projects/${projectId}/images/${imageId}`);
 }
 
 export async function addLineItem(

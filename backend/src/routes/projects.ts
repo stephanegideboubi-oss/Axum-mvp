@@ -1,8 +1,10 @@
 import { Router } from "express";
 import {
   addLineItem,
+  addProjectImage,
   createProject,
   deleteLineItem,
+  deleteProjectImage,
   getProject,
   getProjectAnalytics,
   listProjects,
@@ -50,6 +52,18 @@ projectsRouter.patch(
   asyncHandler(publishProject)
 );
 projectsRouter.patch("/:id/fail", requireAuth, asyncHandler(markProjectFailed));
+projectsRouter.post(
+  "/:id/images",
+  requireAuth,
+  requireRole("entrepreneur"),
+  asyncHandler(addProjectImage)
+);
+projectsRouter.delete(
+  "/:id/images/:imageId",
+  requireAuth,
+  requireRole("entrepreneur"),
+  asyncHandler(deleteProjectImage)
+);
 projectsRouter.post(
   "/:id/contributions",
   requireAuth,

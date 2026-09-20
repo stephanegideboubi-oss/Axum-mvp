@@ -35,7 +35,11 @@ export default function ProjectList() {
   const query = search.trim().toLowerCase();
   const filteredProjects = query
     ? projects.filter(
-        (p) => p.title.toLowerCase().includes(query) || p.location.toLowerCase().includes(query)
+        (p) =>
+          p.title.toLowerCase().includes(query) ||
+          p.location.toLowerCase().includes(query) ||
+          (p.country ?? "").toLowerCase().includes(query) ||
+          (p.zip_code ?? "").toLowerCase().includes(query)
       )
     : projects;
 
@@ -92,7 +96,10 @@ export default function ProjectList() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h2 className="text-lg font-medium text-black">{p.title}</h2>
-                      <p className="text-sm text-neutral-500">{p.location}</p>
+                      <p className="text-sm text-neutral-500">
+                        {p.location}
+                        {p.country ? `, ${p.country}` : ""}
+                      </p>
                     </div>
                     <span
                       className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded ${

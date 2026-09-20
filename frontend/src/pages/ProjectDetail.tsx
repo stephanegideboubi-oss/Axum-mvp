@@ -13,8 +13,9 @@ import DisputePanel from "../components/DisputePanel";
 import EscrowPanel from "../components/EscrowPanel";
 import LineItemBidding from "../components/LineItemBidding";
 import ProjectAnalyticsPanel from "../components/ProjectAnalyticsPanel";
+import ProjectImages from "../components/ProjectImages";
 import { useAuth } from "../context/AuthContext";
-import { BudgetLineItem, Project } from "../types/project";
+import { BudgetLineItem, Project, ProjectImage } from "../types/project";
 
 const STATUS_LABELS: Record<string, string> = {
   open: "Open for bids",
@@ -42,6 +43,7 @@ export default function ProjectDetail() {
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [lineItems, setLineItems] = useState<BudgetLineItem[]>([]);
+  const [images, setImages] = useState<ProjectImage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -73,6 +75,7 @@ export default function ProjectDetail() {
       const result = await getProject(id);
       setProject(result.project);
       setLineItems(result.lineItems);
+      setImages(result.images);
     } catch (err: any) {
       setError(err?.response?.data?.error ?? "Could not load this project");
     } finally {
@@ -222,7 +225,11 @@ export default function ProjectDetail() {
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-2xl font-semibold text-black">{project.title}</h1>
-              <p className="text-sm text-neutral-500">{project.location}</p>
+              <p className="text-sm text-neutral-500">
+                {project.location}
+                {project.country ? `, ${project.country}` : ""}
+                {project.zip_code ? ` ${project.zip_code}` : ""}
+              </p>
             </div>
             <span
               className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded ${
@@ -293,6 +300,8 @@ export default function ProjectDetail() {
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
+
+        <ProjectImages projectId={project.id} images={images} isOwner={isOwner} onChanged={load} />
 
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-black mb-3">Budget line items</h2>

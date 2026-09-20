@@ -7,12 +7,22 @@ export interface Project {
   title: string;
   description: string;
   location: string;
+  country: string | null;
+  zip_code: string | null;
   goal_amount: string;
   currency: string;
   status: ProjectStatus;
   raised_amount?: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProjectImage {
+  id: string;
+  project_id: string;
+  image_url: string;
+  caption: string | null;
+  created_at: string;
 }
 
 export interface BudgetLineItem {

@@ -100,13 +100,15 @@ async function main() {
     // --- Project A: fully funded, mid-flow — one line held & proof uploaded
     // (ready to release live), one line awarded but not yet held, one still open for bids.
     const projectA = await client.query(
-      `INSERT INTO projects (entrepreneur_id, title, description, location, goal_amount, currency, status)
-       VALUES ($1, $2, $3, $4, $5, 'USD', 'funded') RETURNING *`,
+      `INSERT INTO projects (entrepreneur_id, title, description, location, country, zip_code, goal_amount, currency, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'USD', 'funded') RETURNING *`,
       [
         userIds.entrepreneur1,
         "Community Health Clinic — Rural Kenya",
         "Building a small outpatient clinic to serve four surrounding villages, including equipment, power, and staff training.",
-        "Kisumu County, Kenya",
+        "Kisumu County",
+        "Kenya",
+        "40100",
         28000,
       ]
     );
@@ -205,13 +207,15 @@ async function main() {
 
     // --- Project B: fresh, still collecting contributions, one line item.
     const projectB = await client.query(
-      `INSERT INTO projects (entrepreneur_id, title, description, location, goal_amount, currency, status)
-       VALUES ($1, $2, $3, $4, $5, 'USD', 'open') RETURNING *`,
+      `INSERT INTO projects (entrepreneur_id, title, description, location, country, zip_code, goal_amount, currency, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'USD', 'open') RETURNING *`,
       [
         userIds.entrepreneur2,
         "Local Bakery Expansion",
         "Expanding a neighborhood bakery with a second oven and a renovated storefront to handle growing demand.",
-        "Austin, Texas",
+        "Austin",
+        "United States",
+        "78701",
         10000,
       ]
     );
