@@ -14,7 +14,7 @@ function toEmbedUrl(url: string) {
 
 const STEPS = [
   {
-    title: "1. An entrepreneur posts a project",
+    title: "1. A project owner posts a project",
     body: "Goal amount, location, and a full budget broken into line items — every dollar mapped to what it's actually for.",
   },
   {

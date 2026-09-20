@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { UserRole } from "../types/user";
 
 const ROLES: { value: UserRole; label: string }[] = [
-  { value: "entrepreneur", label: "Entrepreneur — I'm raising money for a project" },
+  { value: "entrepreneur", label: "Project owner — I'm raising money for a project" },
   { value: "contributor", label: "Contributor — I want to fund projects" },
   { value: "vendor", label: "Vendor — I want to bid on funded work" },
 ];

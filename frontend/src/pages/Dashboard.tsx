@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { listProjects } from "../api/projects";
 import VendorProfileEditor from "../components/VendorProfileEditor";
 import { useAuth } from "../context/AuthContext";
+import { roleLabel } from "../constants/roles";
 import { Project } from "../types/project";
 
 const STATUS_BADGE: Record<string, string> = {
@@ -41,7 +42,7 @@ export default function Dashboard() {
             </div>
             <div className="flex justify-between">
               <dt className="text-neutral-500">Role</dt>
-              <dd className="text-black capitalize">{user?.role}</dd>
+              <dd className="text-black">{roleLabel(user?.role)}</dd>
             </div>
             {user?.role === "vendor" && (
               <div className="flex justify-between">

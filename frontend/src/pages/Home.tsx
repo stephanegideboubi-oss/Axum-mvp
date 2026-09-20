@@ -82,7 +82,7 @@ export default function Home() {
             <span className="text-orange-500">Track every dollar to delivery.</span>
           </h1>
           <p className="mt-5 text-neutral-300 max-w-2xl mx-auto">
-            AXUM connects entrepreneurs, contributors, and verified vendors around a shared,
+            AXUM connects project owners, contributors, and verified vendors around a shared,
             line-by-line budget — with funds held in escrow and released only against proof of work.
           </p>
 
