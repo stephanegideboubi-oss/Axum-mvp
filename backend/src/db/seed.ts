@@ -21,6 +21,7 @@ interface SeedUser {
   role: "entrepreneur" | "contributor" | "vendor" | "admin";
   businessRegistrationInfo?: string;
   verificationStatus?: "pending" | "verified" | "rejected";
+  bio?: string;
 }
 
 const USERS: SeedUser[] = [
@@ -36,6 +37,7 @@ const USERS: SeedUser[] = [
     role: "vendor",
     businessRegistrationInfo: "Registered LLC #48213, Nairobi, Kenya",
     verificationStatus: "verified",
+    bio: "General contractor specializing in medical equipment procurement and off-grid solar installations across Kenya. 12 years in the field, licensed and insured.",
   },
   {
     key: "vendor2",
@@ -63,9 +65,17 @@ async function main() {
 
     for (const u of USERS) {
       const result = await client.query(
-        `INSERT INTO users (email, password_hash, name, role, business_registration_info, verification_status)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-        [u.email, passwordHash, u.name, u.role, u.businessRegistrationInfo ?? null, u.verificationStatus ?? null]
+        `INSERT INTO users (email, password_hash, name, role, business_registration_info, verification_status, bio)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+        [
+          u.email,
+          passwordHash,
+          u.name,
+          u.role,
+          u.businessRegistrationInfo ?? null,
+          u.verificationStatus ?? null,
+          u.bio ?? null,
+        ]
       );
       userIds[u.key] = result.rows[0].id;
       await appendAuditLog(client, {
@@ -76,6 +86,16 @@ async function main() {
         payload: { email: u.email, role: u.role, seed: true },
       });
     }
+
+    await client.query(
+      `INSERT INTO vendor_portfolio_images (vendor_id, image_url, caption)
+       VALUES ($1, $2, $3)`,
+      [
+        userIds.vendor1,
+        "https://picsum.photos/seed/axum-solar/600/400",
+        "Off-grid solar array installed at a rural health clinic",
+      ]
+    );
 
     // --- Project A: fully funded, mid-flow — one line held & proof uploaded
     // (ready to release live), one line awarded but not yet held, one still open for bids.

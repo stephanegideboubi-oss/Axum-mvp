@@ -30,6 +30,11 @@ export default function NavBar() {
                 My contributions
               </Link>
             )}
+            {user.role === "vendor" && (
+              <Link to="/my-bids" className="text-sm text-neutral-300 hover:text-orange-500">
+                My bids
+              </Link>
+            )}
             {user.role === "admin" && (
               <Link to="/admin" className="text-sm text-neutral-300 hover:text-orange-500">
                 Admin

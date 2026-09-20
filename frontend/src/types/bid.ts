@@ -10,3 +10,11 @@ export interface Bid {
   status: BidStatus;
   created_at: string;
 }
+
+export interface MyBid extends Bid {
+  line_item_description: string;
+  line_item_status: string;
+  project_id: string;
+  project_title: string;
+  project_status: string;
+}

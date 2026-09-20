@@ -1,4 +1,5 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { listBidsForLineItem, rejectBid, selectBid, submitBid } from "../api/bids";
 import { useAuth } from "../context/AuthContext";
 import { Bid } from "../types/bid";
@@ -45,6 +46,7 @@ export default function LineItemBidding({
   }, [loadBids, project.status]);
 
   const myBid = bids.find((b) => b.vendor_id === user?.id);
+  const selectedBid = bids.find((b) => b.status === "selected");
 
   async function handleSubmitBid(e: FormEvent) {
     e.preventDefault();
@@ -96,6 +98,18 @@ export default function LineItemBidding({
   return (
     <div className="mt-3 border-t border-neutral-100 pt-3">
       {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
+
+      {selectedBid && (
+        <p className="text-xs text-neutral-600 mb-2">
+          Awarded to{" "}
+          <Link
+            to={`/vendors/${selectedBid.vendor_id}`}
+            className="text-orange-700 underline font-medium"
+          >
+            {selectedBid.vendor_name} — view profile
+          </Link>
+        </p>
+      )}
 
       {bids.length > 0 && (
         <button

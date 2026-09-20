@@ -12,6 +12,8 @@ import ProjectDetail from "./pages/ProjectDetail";
 import ProjectList from "./pages/ProjectList";
 import Register from "./pages/Register";
 import TrackByUin from "./pages/TrackByUin";
+import VendorBids from "./pages/VendorBids";
+import VendorProfile from "./pages/VendorProfile";
 
 export default function App() {
   return (
@@ -61,6 +63,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <AdminDisputes />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/vendors/:id" element={<VendorProfile />} />
+        <Route
+          path="/my-bids"
+          element={
+            <ProtectedRoute>
+              <VendorBids />
             </ProtectedRoute>
           }
         />

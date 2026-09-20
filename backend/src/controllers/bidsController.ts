@@ -74,6 +74,20 @@ export async function submitBid(req: Request, res: Response) {
   }
 }
 
+export async function listMyBids(req: Request, res: Response) {
+  const result = await pool.query(
+    `SELECT b.*, bli.description AS line_item_description, bli.status AS line_item_status,
+            p.id AS project_id, p.title AS project_title, p.status AS project_status
+     FROM bids b
+     JOIN budget_line_items bli ON bli.id = b.budget_line_item_id
+     JOIN projects p ON p.id = bli.project_id
+     WHERE b.vendor_id = $1
+     ORDER BY b.created_at DESC`,
+    [req.user!.sub]
+  );
+  res.json({ bids: result.rows });
+}
+
 export async function listBidsForLineItem(req: Request, res: Response) {
   const result = await pool.query(
     `SELECT b.*, u.name AS vendor_name FROM bids b JOIN users u ON u.id = b.vendor_id

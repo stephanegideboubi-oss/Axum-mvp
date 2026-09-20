@@ -22,7 +22,7 @@ const loginSchema = z.object({
 });
 
 const PUBLIC_USER_FIELDS =
-  "id, email, name, role, business_registration_info, verification_status, created_at";
+  "id, email, name, role, business_registration_info, verification_status, bio, created_at";
 
 export async function register(req: Request, res: Response) {
   const parsed = registerSchema.safeParse(req.body);

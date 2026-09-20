@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { listProjects } from "../api/projects";
+import VendorProfileEditor from "../components/VendorProfileEditor";
 import { useAuth } from "../context/AuthContext";
 import { Project } from "../types/project";
 
@@ -118,6 +119,8 @@ export default function Dashboard() {
             </ul>
           </div>
         )}
+
+        {user?.role === "vendor" && <VendorProfileEditor />}
       </main>
     </div>
   );
