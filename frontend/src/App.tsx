@@ -1,7 +1,9 @@
 import { Route, Routes } from "react-router-dom";
+import Footer from "./components/Footer";
 import NavBar from "./components/NavBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import AboutUs from "./pages/AboutUs";
 import AdminDisputes from "./pages/AdminDisputes";
 import AdminVendors from "./pages/AdminVendors";
 import CreateProject from "./pages/CreateProject";
@@ -19,64 +21,70 @@ import VendorProfile from "./pages/VendorProfile";
 export default function App() {
   return (
     <AuthProvider>
-      <NavBar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/projects" element={<ProjectList />} />
-        <Route path="/projects/:id" element={<ProjectDetail />} />
-        <Route
-          path="/projects/new"
-          element={
-            <ProtectedRoute>
-              <CreateProject />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/track" element={<TrackByUin />} />
-        <Route
-          path="/my-contributions"
-          element={
-            <ProtectedRoute>
-              <MyContributions />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <AdminVendors />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/disputes"
-          element={
-            <ProtectedRoute>
-              <AdminDisputes />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/vendors/:id" element={<VendorProfile />} />
-        <Route
-          path="/my-bids"
-          element={
-            <ProtectedRoute>
-              <VendorBids />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+      <div className="min-h-screen flex flex-col">
+        <NavBar />
+        <div className="flex-1 flex flex-col">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/projects" element={<ProjectList />} />
+            <Route path="/projects/:id" element={<ProjectDetail />} />
+            <Route
+              path="/projects/new"
+              element={
+                <ProtectedRoute>
+                  <CreateProject />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/track" element={<TrackByUin />} />
+            <Route
+              path="/my-contributions"
+              element={
+                <ProtectedRoute>
+                  <MyContributions />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminVendors />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/disputes"
+              element={
+                <ProtectedRoute>
+                  <AdminDisputes />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/vendors/:id" element={<VendorProfile />} />
+            <Route
+              path="/my-bids"
+              element={
+                <ProtectedRoute>
+                  <VendorBids />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </div>
+        <Footer />
+      </div>
     </AuthProvider>
   );
 }
