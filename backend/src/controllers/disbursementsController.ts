@@ -126,6 +126,49 @@ export async function listProofForLineItem(req: Request, res: Response) {
   res.json({ proofDocuments: result.rows });
 }
 
+// Dual control: an admin must authorize a release before the escrow partner
+// can execute it. Admin never touches the money directly — authorizing only
+// unlocks the bank's ability to act; it doesn't move funds by itself.
+export async function authorizeRelease(req: Request, res: Response) {
+  const lineItem = await loadLineItem(req.params.id);
+  if (lineItem.status !== "proof_submitted") {
+    throw new HttpError(409, "Proof must be uploaded before a release can be authorized");
+  }
+
+  const disbursement = await pool.query(
+    "SELECT * FROM disbursements WHERE budget_line_item_id = $1",
+    [lineItem.id]
+  );
+  if (!disbursement.rows[0]) throw new HttpError(404, "No held disbursement found for this line item");
+  if (disbursement.rows[0].release_authorized_by) {
+    throw new HttpError(409, "Release has already been authorized for this line item");
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const result = await client.query(
+      `UPDATE disbursements SET release_authorized_by = $1, release_authorized_at = now()
+       WHERE id = $2 RETURNING *`,
+      [req.user!.sub, disbursement.rows[0].id]
+    );
+    await appendAuditLog(client, {
+      entityType: "disbursement",
+      entityId: result.rows[0].id,
+      action: "disbursement.release_authorized",
+      actorId: req.user!.sub,
+      payload: { lineItemId: lineItem.id, amount: lineItem.amount },
+    });
+    await client.query("COMMIT");
+    res.json({ disbursement: result.rows[0] });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 export async function releaseFunds(req: Request, res: Response) {
   const lineItem = await loadLineItem(req.params.id);
   if (lineItem.disputed) {
@@ -140,6 +183,9 @@ export async function releaseFunds(req: Request, res: Response) {
     [lineItem.id]
   );
   if (!disbursement.rows[0]) throw new HttpError(404, "No held disbursement found for this line item");
+  if (!disbursement.rows[0].release_authorized_by) {
+    throw new HttpError(409, "Release must be authorized by an admin before the escrow partner can release funds");
+  }
 
   const client = await pool.connect();
   try {

@@ -1,7 +1,9 @@
 import { FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
 import { lookupByUin } from "../api/contributions";
+import EscrowStatusCard from "../components/EscrowStatusCard";
 import { Contribution } from "../types/contribution";
+import { EscrowStatus } from "../types/escrow";
 import { BudgetLineItem, Project } from "../types/project";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -23,6 +25,7 @@ export default function TrackByUin() {
     contribution: Contribution;
     project: Project;
     lineItems: BudgetLineItem[];
+    escrow: EscrowStatus;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -93,6 +96,8 @@ export default function TrackByUin() {
               </span>{" "}
               ({result.contribution.status})
             </div>
+
+            <EscrowStatusCard escrow={result.escrow} currency={result.project.currency} />
 
             <div>
               <h2 className="font-medium text-black mb-2">Line-by-line status</h2>

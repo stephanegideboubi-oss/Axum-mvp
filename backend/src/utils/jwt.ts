@@ -3,7 +3,7 @@ import { env } from "../config/env";
 
 export interface AuthTokenPayload {
   sub: string;
-  role: "entrepreneur" | "contributor" | "vendor" | "admin";
+  role: "entrepreneur" | "contributor" | "vendor" | "admin" | "escrow_partner";
 }
 
 export function signToken(payload: AuthTokenPayload): string {

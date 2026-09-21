@@ -40,6 +40,11 @@ export default function NavBar() {
                 Admin
               </Link>
             )}
+            {user.role === "escrow_partner" && (
+              <Link to="/escrow" className="text-sm text-neutral-300 hover:text-orange-500">
+                Escrow
+              </Link>
+            )}
             <button onClick={logout} className="text-sm text-neutral-300 hover:text-orange-500">
               Log out
             </button>

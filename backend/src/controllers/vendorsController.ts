@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import { pool } from "../config/db";
 import { HttpError } from "../middleware/errorHandler";
+import { appendAuditLog } from "../services/auditLog";
 
 export async function getVendorProfile(req: Request, res: Response) {
   const userResult = await pool.query(
@@ -61,6 +62,13 @@ export async function updateMyVendorProfile(req: Request, res: Response) {
      RETURNING id, name, business_registration_info, verification_status, bio, created_at`,
     [bio ?? null, businessRegistrationInfo ?? null, req.user!.sub]
   );
+  await appendAuditLog(pool, {
+    entityType: "user",
+    entityId: req.user!.sub,
+    action: "vendor.profile_updated",
+    actorId: req.user!.sub,
+    payload: {},
+  });
   res.json({ vendor: result.rows[0] });
 }
 
@@ -81,6 +89,13 @@ export async function addPortfolioImage(req: Request, res: Response) {
      VALUES ($1, $2, $3) RETURNING *`,
     [req.user!.sub, imageUrl, caption ?? null]
   );
+  await appendAuditLog(pool, {
+    entityType: "user",
+    entityId: req.user!.sub,
+    action: "vendor.portfolio_image_added",
+    actorId: req.user!.sub,
+    payload: {},
+  });
   res.status(201).json({ image: result.rows[0] });
 }
 
@@ -90,5 +105,12 @@ export async function deletePortfolioImage(req: Request, res: Response) {
     [req.params.imageId, req.user!.sub]
   );
   if (!result.rows[0]) throw new HttpError(404, "Portfolio image not found");
+  await appendAuditLog(pool, {
+    entityType: "user",
+    entityId: req.user!.sub,
+    action: "vendor.portfolio_image_removed",
+    actorId: req.user!.sub,
+    payload: {},
+  });
   res.status(204).send();
 }

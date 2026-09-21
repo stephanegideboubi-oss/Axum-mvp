@@ -8,8 +8,13 @@ import { asyncHandler } from "../utils/asyncHandler";
 export const lineItemBidsRouter = Router();
 lineItemBidsRouter.post("/:id/bids", requireAuth, requireRole("vendor"), asyncHandler(submitBid));
 lineItemBidsRouter.get("/:id/bids", asyncHandler(listBidsForLineItem));
-lineItemBidsRouter.post("/:id/hold", requireAuth, requireRole("admin"), asyncHandler(holdFunds));
-lineItemBidsRouter.post("/:id/release", requireAuth, requireRole("admin"), asyncHandler(releaseFunds));
+lineItemBidsRouter.post("/:id/hold", requireAuth, requireRole("escrow_partner"), asyncHandler(holdFunds));
+lineItemBidsRouter.post(
+  "/:id/release",
+  requireAuth,
+  requireRole("escrow_partner"),
+  asyncHandler(releaseFunds)
+);
 lineItemBidsRouter.post("/:id/proof", requireAuth, requireRole("vendor"), asyncHandler(uploadProof));
 lineItemBidsRouter.get("/:id/proof", asyncHandler(listProofForLineItem));
 lineItemBidsRouter.post(

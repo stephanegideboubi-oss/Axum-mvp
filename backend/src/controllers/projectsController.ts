@@ -3,6 +3,7 @@ import { z } from "zod";
 import { pool } from "../config/db";
 import { HttpError } from "../middleware/errorHandler";
 import { appendAuditLog } from "../services/auditLog";
+import { getProjectEscrowStatus } from "../services/escrow";
 
 const createProjectSchema = z.object({
   title: z.string().min(1),
@@ -82,6 +83,13 @@ export async function addLineItem(req: Request, res: Response) {
      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
     [project.id, description, category, location, quantity, unitCost, amount]
   );
+  await appendAuditLog(pool, {
+    entityType: "budget_line_item",
+    entityId: result.rows[0].id,
+    action: "line_item.added",
+    actorId: req.user!.sub,
+    payload: { description, amount },
+  });
   res.status(201).json({ lineItem: result.rows[0] });
 }
 
@@ -113,6 +121,13 @@ export async function updateLineItem(req: Request, res: Response) {
      WHERE id = $7 RETURNING *`,
     [description, category, location, quantity, unitCost, amount, req.params.lineItemId]
   );
+  await appendAuditLog(pool, {
+    entityType: "budget_line_item",
+    entityId: req.params.lineItemId,
+    action: "line_item.updated",
+    actorId: req.user!.sub,
+    payload: { description, amount },
+  });
   res.json({ lineItem: result.rows[0] });
 }
 
@@ -130,6 +145,13 @@ export async function deleteLineItem(req: Request, res: Response) {
     [req.params.lineItemId, project.id]
   );
   if (!result.rows[0]) throw new HttpError(404, "Budget line item not found");
+  await appendAuditLog(pool, {
+    entityType: "budget_line_item",
+    entityId: req.params.lineItemId,
+    action: "line_item.removed",
+    actorId: req.user!.sub,
+    payload: {},
+  });
   res.status(204).send();
 }
 
@@ -261,7 +283,10 @@ export async function getProject(req: Request, res: Response) {
   }
 
   const lineItems = await pool.query(
-    "SELECT * FROM budget_line_items WHERE project_id = $1 ORDER BY created_at ASC",
+    `SELECT bli.*, (d.release_authorized_by IS NOT NULL) AS release_authorized
+     FROM budget_line_items bli
+     LEFT JOIN disbursements d ON d.budget_line_item_id = bli.id
+     WHERE bli.project_id = $1 ORDER BY bli.created_at ASC`,
     [project.id]
   );
   const raised = await pool.query(
@@ -272,11 +297,13 @@ export async function getProject(req: Request, res: Response) {
     "SELECT * FROM project_images WHERE project_id = $1 ORDER BY created_at ASC",
     [project.id]
   );
+  const escrow = await getProjectEscrowStatus(project.id);
 
   res.json({
     project: { ...project, raised_amount: Number(raised.rows[0].raised) },
     lineItems: lineItems.rows,
     images: images.rows,
+    escrow,
   });
 }
 

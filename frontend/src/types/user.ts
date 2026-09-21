@@ -1,4 +1,4 @@
-export type UserRole = "entrepreneur" | "contributor" | "vendor" | "admin";
+export type UserRole = "entrepreneur" | "contributor" | "vendor" | "admin" | "escrow_partner";
 export type VendorVerificationStatus = "pending" | "verified" | "rejected";
 
 export interface User {

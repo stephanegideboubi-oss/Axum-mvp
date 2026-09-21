@@ -1,5 +1,5 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { holdFunds, listProof, releaseFunds, uploadProof } from "../api/disbursements";
+import { authorizeRelease, holdFunds, listProof, releaseFunds, uploadProof } from "../api/disbursements";
 import { listBidsForLineItem } from "../api/bids";
 import { useAuth } from "../context/AuthContext";
 import { BudgetLineItem, Project } from "../types/project";
@@ -76,6 +76,20 @@ export default function EscrowPanel({
     }
   }
 
+  async function handleAuthorize() {
+    setBusy(true);
+    setError(null);
+    try {
+      await authorizeRelease(lineItem.id);
+      await load();
+      onChanged();
+    } catch (err: any) {
+      setError(err?.response?.data?.error ?? "Could not authorize this release");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleUploadProof(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -109,7 +123,7 @@ export default function EscrowPanel({
         </ul>
       )}
 
-      {user?.role === "admin" && lineItem.status === "awarded" && (
+      {user?.role === "escrow_partner" && lineItem.status === "awarded" && (
         <button
           onClick={handleHold}
           disabled={busy}
@@ -156,17 +170,39 @@ export default function EscrowPanel({
         </form>
       )}
 
-      {user?.role === "admin" && lineItem.status === "proof_submitted" && (
+      {user?.role === "admin" && lineItem.status === "proof_submitted" && !lineItem.release_authorized && (
+        <button
+          onClick={handleAuthorize}
+          disabled={busy}
+          className="rounded bg-blue-700 text-white px-3 py-1.5 disabled:opacity-50"
+        >
+          {busy ? "Authorizing..." : "Authorize release"}
+        </button>
+      )}
+
+      {user?.role === "admin" && lineItem.status === "proof_submitted" && lineItem.release_authorized && (
+        <p className="text-green-700">Release authorized — awaiting the escrow partner.</p>
+      )}
+
+      {user?.role === "escrow_partner" && lineItem.status === "proof_submitted" && (
         <button
           onClick={handleRelease}
-          disabled={busy || lineItem.disputed}
+          disabled={busy || lineItem.disputed || !lineItem.release_authorized}
           className="rounded bg-green-700 text-white px-3 py-1.5 disabled:opacity-50"
-          title={lineItem.disputed ? "Frozen by a dispute — resolve it first" : undefined}
+          title={
+            lineItem.disputed
+              ? "Frozen by a dispute — resolve it first"
+              : !lineItem.release_authorized
+              ? "Waiting for an admin to authorize this release"
+              : undefined
+          }
         >
           {busy
             ? "Releasing..."
             : lineItem.disputed
             ? "Frozen by dispute — cannot release"
+            : !lineItem.release_authorized
+            ? "Awaiting admin authorization"
             : `Release ${money(lineItem.amount, project.currency)} to vendor`}
         </button>
       )}

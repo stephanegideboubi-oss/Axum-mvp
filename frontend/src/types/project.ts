@@ -37,6 +37,7 @@ export interface BudgetLineItem {
   amount: string;
   status: LineItemStatus;
   disputed: boolean;
+  release_authorized?: boolean;
   created_at: string;
   updated_at: string;
 }

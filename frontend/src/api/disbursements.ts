@@ -9,6 +9,10 @@ export async function releaseFunds(lineItemId: string): Promise<void> {
   await apiClient.post(`/line-items/${lineItemId}/release`);
 }
 
+export async function authorizeRelease(lineItemId: string): Promise<void> {
+  await apiClient.patch(`/admin/line-items/${lineItemId}/authorize-release`);
+}
+
 export async function uploadProof(
   lineItemId: string,
   params: { type: ProofType; fileUrl: string; description?: string }

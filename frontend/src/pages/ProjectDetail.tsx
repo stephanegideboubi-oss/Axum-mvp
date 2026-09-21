@@ -11,10 +11,12 @@ import {
 } from "../api/projects";
 import DisputePanel from "../components/DisputePanel";
 import EscrowPanel from "../components/EscrowPanel";
+import EscrowStatusCard from "../components/EscrowStatusCard";
 import LineItemBidding from "../components/LineItemBidding";
 import ProjectAnalyticsPanel from "../components/ProjectAnalyticsPanel";
 import ProjectImages from "../components/ProjectImages";
 import { useAuth } from "../context/AuthContext";
+import { EscrowStatus } from "../types/escrow";
 import { BudgetLineItem, Project, ProjectImage } from "../types/project";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -44,6 +46,7 @@ export default function ProjectDetail() {
   const [project, setProject] = useState<Project | null>(null);
   const [lineItems, setLineItems] = useState<BudgetLineItem[]>([]);
   const [images, setImages] = useState<ProjectImage[]>([]);
+  const [escrow, setEscrow] = useState<EscrowStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -76,6 +79,7 @@ export default function ProjectDetail() {
       setProject(result.project);
       setLineItems(result.lineItems);
       setImages(result.images);
+      setEscrow(result.escrow);
     } catch (err: any) {
       setError(err?.response?.data?.error ?? "Could not load this project");
     } finally {
@@ -302,6 +306,8 @@ export default function ProjectDetail() {
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         <ProjectImages projectId={project.id} images={images} isOwner={isOwner} onChanged={load} />
+
+        {escrow && <EscrowStatusCard escrow={escrow} currency={project.currency} />}
 
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-black mb-3">Budget line items</h2>

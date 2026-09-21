@@ -8,6 +8,7 @@ import AdminDisputes from "./pages/AdminDisputes";
 import AdminVendors from "./pages/AdminVendors";
 import CreateProject from "./pages/CreateProject";
 import Dashboard from "./pages/Dashboard";
+import EscrowDashboard from "./pages/EscrowDashboard";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import MyContributions from "./pages/MyContributions";
@@ -69,6 +70,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <AdminDisputes />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/escrow"
+              element={
+                <ProtectedRoute>
+                  <EscrowDashboard />
                 </ProtectedRoute>
               }
             />

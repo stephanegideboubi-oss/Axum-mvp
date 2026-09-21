@@ -1,5 +1,6 @@
 import { apiClient } from "./client";
 import { BudgetLineItem, Project, ProjectAnalytics, ProjectImage } from "../types/project";
+import { EscrowStatus } from "../types/escrow";
 
 export async function listProjects(mine = false): Promise<Project[]> {
   const { data } = await apiClient.get<{ projects: Project[] }>("/projects", {
@@ -10,11 +11,12 @@ export async function listProjects(mine = false): Promise<Project[]> {
 
 export async function getProject(
   id: string
-): Promise<{ project: Project; lineItems: BudgetLineItem[]; images: ProjectImage[] }> {
+): Promise<{ project: Project; lineItems: BudgetLineItem[]; images: ProjectImage[]; escrow: EscrowStatus }> {
   const { data } = await apiClient.get<{
     project: Project;
     lineItems: BudgetLineItem[];
     images: ProjectImage[];
+    escrow: EscrowStatus;
   }>(`/projects/${id}`);
   return data;
 }

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { pool } from "../config/db";
+import { verifyAuditChain } from "../services/auditLog";
 
 export async function getAuditLog(req: Request, res: Response) {
   const { entityType, entityId } = req.params;
@@ -11,4 +12,8 @@ export async function getAuditLog(req: Request, res: Response) {
     [entityType, entityId]
   );
   res.json({ entries: result.rows });
+}
+
+export async function verifyChain(_req: Request, res: Response) {
+  res.json(await verifyAuditChain());
 }

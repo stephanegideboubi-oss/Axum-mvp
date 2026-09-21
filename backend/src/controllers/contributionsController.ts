@@ -4,6 +4,7 @@ import { z } from "zod";
 import { pool } from "../config/db";
 import { HttpError } from "../middleware/errorHandler";
 import { appendAuditLog } from "../services/auditLog";
+import { getProjectEscrowStatus } from "../services/escrow";
 
 const contributeSchema = z.object({
   amount: z.number().positive(),
@@ -120,10 +121,12 @@ export async function lookupByUin(req: Request, res: Response) {
     "SELECT * FROM budget_line_items WHERE project_id = $1 ORDER BY created_at ASC",
     [contribution.project_id]
   );
+  const escrow = await getProjectEscrowStatus(contribution.project_id);
 
   res.json({
     contribution,
     project: projectResult.rows[0],
     lineItems: lineItemsResult.rows,
+    escrow,
   });
 }

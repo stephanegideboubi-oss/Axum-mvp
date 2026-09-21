@@ -1,6 +1,7 @@
 import { apiClient } from "./client";
 import { Contribution } from "../types/contribution";
 import { BudgetLineItem, Project } from "../types/project";
+import { EscrowStatus } from "../types/escrow";
 
 export async function contribute(projectId: string, amount: number): Promise<{
   contribution: Contribution;
@@ -20,6 +21,7 @@ export async function lookupByUin(uin: string): Promise<{
   contribution: Contribution;
   project: Project;
   lineItems: BudgetLineItem[];
+  escrow: EscrowStatus;
 }> {
   const { data } = await apiClient.get(`/contributions/uin/${encodeURIComponent(uin)}`);
   return data;

@@ -99,6 +99,15 @@ export async function login(req: Request, res: Response) {
 
   const token = signToken({ sub: user.id, role: user.role });
   delete user.password_hash;
+
+  await appendAuditLog(pool, {
+    entityType: "user",
+    entityId: user.id,
+    action: "user.logged_in",
+    actorId: user.id,
+    payload: {},
+  });
+
   res.json({ token, user });
 }
 
