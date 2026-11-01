@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Logo from "./Logo";
 
 // Placeholder URLs — swap in the real profile links once the accounts exist.
 const SOCIAL_LINKS = [
@@ -39,8 +40,8 @@ export default function Footer() {
   return (
     <footer className="bg-black text-neutral-400 mt-auto">
       <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <Link to="/" className="font-display text-lg font-bold text-white tracking-wide">
-          AX<span className="text-orange-500">UM</span>
+        <Link to="/" aria-label="AXUM home">
+          <Logo size="sm" />
         </Link>
 
         <div className="flex items-center gap-5 text-sm">

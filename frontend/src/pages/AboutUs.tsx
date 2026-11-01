@@ -1,4 +1,5 @@
 import Eyebrow from "../components/Eyebrow";
+import { LogoMark } from "../components/Logo";
 
 const SECTIONS = [
   {
@@ -30,7 +31,10 @@ export default function AboutUs() {
           aria-hidden="true"
         />
         <div className="relative max-w-3xl mx-auto px-6 py-20 text-center">
-          <Eyebrow center className="text-orange-400">
+          <div className="flex justify-center">
+            <LogoMark className="h-16 w-16" />
+          </div>
+          <Eyebrow center className="mt-6 text-orange-400">
             About us
           </Eyebrow>
           <h1 className="mt-4 text-4xl sm:text-5xl font-bold">

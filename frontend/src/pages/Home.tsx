@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { listProjects } from "../api/projects";
 import Eyebrow from "../components/Eyebrow";
 import HowItWorksVideo from "../components/HowItWorksVideo";
+import Logo, { LogoMark } from "../components/Logo";
 import ProjectCard from "../components/ProjectCard";
 import { useAuth } from "../context/AuthContext";
 import { Project } from "../types/project";
@@ -68,8 +69,12 @@ export default function Home() {
           }}
           aria-hidden="true"
         />
-        <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-40">
-          <Eyebrow className="text-orange-400">Transparent project funding</Eyebrow>
+        <LogoMark className="pointer-events-none absolute -right-16 top-1/2 hidden h-[26rem] w-[26rem] -translate-y-[58%] -rotate-6 opacity-[0.07] lg:block" />
+        <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-40">
+          <Logo size="lg" />
+          <div className="mt-10">
+            <Eyebrow className="text-orange-400">Transparent project funding</Eyebrow>
+          </div>
           <h1 className="mt-5 max-w-3xl text-4xl sm:text-6xl font-bold leading-[1.08] tracking-tight">
             Fund real projects.{" "}
             <span className="text-orange-500">Track every dollar to delivery.</span>

@@ -1,5 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Logo from "./Logo";
 
 function linkClass({ isActive }: { isActive: boolean }) {
   return `relative whitespace-nowrap py-1 text-sm transition-colors ${
@@ -15,8 +16,8 @@ export default function NavBar() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-black/90 backdrop-blur">
       <div className="px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center gap-4">
-        <Link to="/" className="shrink-0 font-display text-xl font-bold text-white tracking-wide">
-          AX<span className="text-orange-500">UM</span>
+        <Link to="/" className="shrink-0" aria-label="AXUM home">
+          <Logo />
         </Link>
         <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 sm:gap-x-6">
           <NavLink to="/projects" className={linkClass}>
