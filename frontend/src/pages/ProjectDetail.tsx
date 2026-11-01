@@ -11,6 +11,7 @@ import {
 } from "../api/projects";
 import DisputePanel from "../components/DisputePanel";
 import EscrowPanel from "../components/EscrowPanel";
+import Eyebrow from "../components/Eyebrow";
 import EscrowStatusCard from "../components/EscrowStatusCard";
 import LineItemBidding from "../components/LineItemBidding";
 import ProjectAnalyticsPanel from "../components/ProjectAnalyticsPanel";
@@ -219,40 +220,44 @@ export default function ProjectDetail() {
   const canPublish = lineItems.length > 0 && remainingToAllocate === 0;
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-10">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <Link to="/projects" className="text-sm text-neutral-600 underline">
+    <div className="min-h-screen bg-neutral-50 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
+        <Link to="/projects" className="text-sm font-medium text-neutral-600 hover:text-orange-600">
           &larr; Back to projects
         </Link>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-start">
+        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-6 sm:p-8">
+          <div className="flex justify-between items-start gap-4">
             <div>
-              <h1 className="text-2xl font-semibold text-black">{project.title}</h1>
-              <p className="text-sm text-neutral-500">
-                {project.location}
-                {project.country ? `, ${project.country}` : ""}
-                {project.zip_code ? ` ${project.zip_code}` : ""}
-              </p>
+              <Eyebrow>
+                {[project.location, project.country, project.zip_code].filter(Boolean).join(", ") ||
+                  "Project"}
+              </Eyebrow>
+              <h1 className="mt-3 text-3xl sm:text-4xl font-bold leading-tight text-black">{project.title}</h1>
             </div>
             <span
-              className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded ${
+              className={`shrink-0 text-xs uppercase tracking-wide font-semibold px-3 py-1 rounded-full ${
                 PROJECT_STATUS_BADGE[project.status] ?? "bg-neutral-100 text-neutral-700"
               }`}
             >
               {project.status}
             </span>
           </div>
-          <p className="mt-4 text-neutral-700 whitespace-pre-wrap">{project.description}</p>
+          <p className="mt-5 text-neutral-700 leading-relaxed whitespace-pre-wrap">{project.description}</p>
 
           {project.status !== "draft" && (
-            <div className="mt-6">
-              <div className="flex justify-between text-sm text-neutral-600">
-                <span>{money(raised, project.currency)} raised</span>
-                <span>Goal: {money(project.goal_amount, project.currency)}</span>
+            <div className="mt-8 rounded-2xl bg-neutral-50 border border-neutral-200 p-5">
+              <div className="flex flex-wrap items-end justify-between gap-2">
+                <div>
+                  <p className="font-display text-3xl font-bold text-black">{money(raised, project.currency)}</p>
+                  <p className="text-sm text-neutral-500">
+                    raised of {money(project.goal_amount, project.currency)} goal
+                  </p>
+                </div>
+                <p className="font-display text-2xl font-bold text-orange-600">{progressPct}%</p>
               </div>
-              <div className="mt-1 h-2 bg-neutral-200 rounded overflow-hidden">
-                <div className="h-full bg-orange-600" style={{ width: `${progressPct}%` }} />
+              <div className="mt-3 h-3 bg-neutral-200 rounded-full overflow-hidden">
+                <div className="h-full rounded-full bg-orange-600" style={{ width: `${progressPct}%` }} />
               </div>
             </div>
           )}
@@ -267,7 +272,7 @@ export default function ProjectDetail() {
           )}
 
           {lastUin && (
-            <p className="mt-6 text-sm text-green-700 bg-green-50 border border-green-200 rounded p-3">
+            <p className="mt-6 text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl p-3">
               Contribution recorded. Your tracking number (UIN) is{" "}
               <span className="font-mono font-medium">{lastUin}</span> — save it to check on this
               project any time from the "Track a project" page, even if you're not logged in.
@@ -287,14 +292,14 @@ export default function ProjectDetail() {
                   step="0.01"
                   required
                   placeholder="Amount (USD)"
-                  className="flex-1 rounded border border-neutral-300 px-3 py-2"
+                  className="flex-1 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2"
                   value={contributionAmount}
                   onChange={(e) => setContributionAmount(e.target.value)}
                 />
                 <button
                   type="submit"
                   disabled={contributing}
-                  className="rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
+                  className="rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
                 >
                   {contributing ? "Contributing..." : "Contribute"}
                 </button>
@@ -309,7 +314,7 @@ export default function ProjectDetail() {
 
         {escrow && <EscrowStatusCard escrow={escrow} currency={project.currency} />}
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 sm:p-7">
           <h2 className="text-lg font-semibold text-black mb-3">Budget line items</h2>
           {lineItems.length === 0 && (
             <p className="text-sm text-neutral-500">No line items yet.</p>
@@ -317,28 +322,28 @@ export default function ProjectDetail() {
           <ul className="space-y-3">
             {lineItems.map((li) =>
               editingId === li.id ? (
-                <li key={li.id} className="border border-orange-300 rounded p-4 bg-orange-50">
+                <li key={li.id} className="border border-orange-300 rounded-xl p-4 bg-orange-50">
                   <form
                     onSubmit={(e) => handleSaveEdit(e, li.id)}
                     className="space-y-3"
                   >
                     <div className="grid grid-cols-2 gap-3">
                       <input
-                        className="rounded border border-neutral-300 px-3 py-2 col-span-2"
+                        className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2 col-span-2"
                         placeholder="Description"
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
                         required
                       />
                       <input
-                        className="rounded border border-neutral-300 px-3 py-2"
+                        className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2"
                         placeholder="Category"
                         value={editCategory}
                         onChange={(e) => setEditCategory(e.target.value)}
                         required
                       />
                       <input
-                        className="rounded border border-neutral-300 px-3 py-2"
+                        className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2"
                         placeholder="Location"
                         value={editLocation}
                         onChange={(e) => setEditLocation(e.target.value)}
@@ -348,7 +353,7 @@ export default function ProjectDetail() {
                         type="number"
                         min="0.01"
                         step="0.01"
-                        className="rounded border border-neutral-300 px-3 py-2"
+                        className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2"
                         placeholder="Quantity"
                         value={editQuantity}
                         onChange={(e) => setEditQuantity(e.target.value)}
@@ -358,7 +363,7 @@ export default function ProjectDetail() {
                         type="number"
                         min="0.01"
                         step="0.01"
-                        className="rounded border border-neutral-300 px-3 py-2"
+                        className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2"
                         placeholder="Unit cost (USD)"
                         value={editUnitCost}
                         onChange={(e) => setEditUnitCost(e.target.value)}
@@ -369,14 +374,14 @@ export default function ProjectDetail() {
                       <button
                         type="submit"
                         disabled={savingEdit}
-                        className="rounded bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 text-sm font-medium disabled:opacity-50"
+                        className="rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-3 py-1.5 text-sm font-medium disabled:opacity-50"
                       >
                         {savingEdit ? "Saving..." : "Save"}
                       </button>
                       <button
                         type="button"
                         onClick={() => setEditingId(null)}
-                        className="rounded border border-neutral-300 px-3 py-1.5 text-sm"
+                        className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-1.5 text-sm"
                       >
                         Cancel
                       </button>
@@ -384,7 +389,7 @@ export default function ProjectDetail() {
                   </form>
                 </li>
               ) : (
-                <li key={li.id} className="border border-neutral-200 rounded p-4">
+                <li key={li.id} className="border border-neutral-200 rounded-xl p-4">
                   <div className="flex justify-between">
                     <span className="font-medium text-black">{li.description}</span>
                     <span className="text-black">{money(li.amount, project.currency)}</span>
@@ -394,7 +399,7 @@ export default function ProjectDetail() {
                     {money(li.unit_cost, project.currency)}
                   </p>
                   {project.status !== "draft" && (
-                    <span className="mt-2 inline-block text-xs uppercase tracking-wide font-medium bg-neutral-100 text-neutral-700 px-2 py-1 rounded">
+                    <span className="mt-2 inline-block text-xs uppercase tracking-wide font-medium bg-neutral-100 text-neutral-700 px-2.5 py-1 rounded-full">
                       {STATUS_LABELS[li.status] ?? li.status}
                       {li.disputed ? " · flagged, disbursement frozen" : ""}
                     </span>
@@ -426,7 +431,7 @@ export default function ProjectDetail() {
 
           {project.status === "draft" && lineItems.length > 0 && (
             <div
-              className={`mt-4 rounded border p-3 text-sm flex justify-between ${
+              className={`mt-4 rounded-xl border p-3 text-sm flex justify-between ${
                 remainingToAllocate === 0
                   ? "border-green-300 bg-green-50 text-green-800"
                   : remainingToAllocate > 0
@@ -451,21 +456,21 @@ export default function ProjectDetail() {
                 <h3 className="font-medium text-black">Add a line item</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <input
-                    className="rounded border border-neutral-300 px-3 py-2 col-span-2"
+                    className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2 col-span-2"
                     placeholder="Description (e.g. 500 bricks)"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     required
                   />
                   <input
-                    className="rounded border border-neutral-300 px-3 py-2"
+                    className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2"
                     placeholder="Category (e.g. Materials)"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     required
                   />
                   <input
-                    className="rounded border border-neutral-300 px-3 py-2"
+                    className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2"
                     placeholder="Location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
@@ -475,7 +480,7 @@ export default function ProjectDetail() {
                     type="number"
                     min="0.01"
                     step="0.01"
-                    className="rounded border border-neutral-300 px-3 py-2"
+                    className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2"
                     placeholder="Quantity"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
@@ -485,7 +490,7 @@ export default function ProjectDetail() {
                     type="number"
                     min="0.01"
                     step="0.01"
-                    className="rounded border border-neutral-300 px-3 py-2"
+                    className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2"
                     placeholder="Unit cost (USD)"
                     value={unitCost}
                     onChange={(e) => setUnitCost(e.target.value)}
@@ -495,7 +500,7 @@ export default function ProjectDetail() {
                 <button
                   type="submit"
                   disabled={addingItem}
-                  className="rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
+                  className="rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
                 >
                   {addingItem ? "Adding..." : "Add line item"}
                 </button>
@@ -504,7 +509,7 @@ export default function ProjectDetail() {
               <button
                 onClick={handlePublish}
                 disabled={publishing || !canPublish}
-                className="mt-4 w-full rounded bg-green-700 text-white py-2 font-medium disabled:opacity-50"
+                className="mt-4 w-full rounded-xl bg-green-700 text-white py-2 font-medium disabled:opacity-50"
               >
                 {publishing
                   ? "Publishing..."

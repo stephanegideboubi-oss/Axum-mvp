@@ -86,7 +86,7 @@ export default function VendorProfileEditor() {
   if (!user) return null;
 
   return (
-    <div className="bg-white rounded-lg shadow p-8 space-y-6">
+    <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-8 space-y-6">
       <div className="flex justify-between items-start">
         <h3 className="text-lg font-semibold text-black">Your public profile</h3>
         <Link to={`/vendors/${user.id}`} className="text-sm text-orange-700 underline">
@@ -101,7 +101,7 @@ export default function VendorProfileEditor() {
           Bio — describe the goods or services you provide
         </label>
         <textarea
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2 text-sm"
           rows={3}
           placeholder="e.g. Licensed electrical contractor specializing in solar installs across Kisumu County..."
           value={bio}
@@ -113,7 +113,7 @@ export default function VendorProfileEditor() {
         <button
           type="submit"
           disabled={savingBio}
-          className="rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
+          className="rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
           {savingBio ? "Saving..." : "Save bio"}
         </button>
@@ -133,7 +133,7 @@ export default function VendorProfileEditor() {
               <img
                 src={img.image_url}
                 alt={img.caption ?? "Portfolio item"}
-                className="w-full h-32 object-cover rounded border border-neutral-200"
+                className="w-full h-32 object-cover rounded-xl border border-neutral-200"
               />
               {img.caption && <p className="mt-1 text-xs text-neutral-500">{img.caption}</p>}
               <button
@@ -162,14 +162,14 @@ export default function VendorProfileEditor() {
           />
           <input
             placeholder="Caption (optional)"
-            className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2 text-sm"
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
           />
           <button
             type="submit"
             disabled={addingImage || uploading || !file}
-            className="rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
+            className="rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
             {uploading ? "Uploading..." : addingImage ? "Adding..." : "Add photo"}
           </button>

@@ -1,3 +1,4 @@
+import Eyebrow from "../components/Eyebrow";
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -25,15 +26,18 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white p-8 rounded-lg shadow space-y-4">
-        <h1 className="text-2xl font-semibold text-black">Log in</h1>
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4 py-12">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white p-8 rounded-3xl border border-neutral-200 shadow-xl space-y-4">
+        <div>
+          <Eyebrow>Welcome back</Eyebrow>
+          <h1 className="mt-2 text-3xl font-bold text-black">Log in</h1>
+        </div>
 
         <div>
           <label className="block text-sm font-medium text-neutral-700">Email</label>
           <input
             type="email"
-            className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -44,7 +48,7 @@ export default function Login() {
           <label className="block text-sm font-medium text-neutral-700">Password</label>
           <input
             type="password"
-            className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -56,20 +60,20 @@ export default function Login() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded bg-orange-600 hover:bg-orange-700 text-white py-2 font-medium disabled:opacity-50"
+          className="w-full rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white py-3 font-semibold disabled:opacity-50"
         >
           {submitting ? "Logging in..." : "Log in"}
         </button>
 
         <p className="text-sm text-neutral-600 text-center">
           Need an account?{" "}
-          <Link to="/register" className="text-black underline">
+          <Link to="/register" className="font-medium text-orange-600 hover:underline">
             Register
           </Link>
         </p>
         <p className="text-sm text-neutral-600 text-center">
           Already contributed?{" "}
-          <Link to="/track" className="text-black underline">
+          <Link to="/track" className="font-medium text-orange-600 hover:underline">
             Track your project with your UIN
           </Link>
         </p>

@@ -27,18 +27,18 @@ export default function VendorProfile() {
   const { vendor, portfolio, stats } = data;
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-10">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="bg-white rounded-lg shadow p-6">
+    <div className="min-h-screen bg-neutral-50 py-12">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-6">
+        <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 sm:p-7">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-2xl font-semibold text-black">{vendor.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-black">{vendor.name}</h1>
               {vendor.business_registration_info && (
                 <p className="text-sm text-neutral-500 mt-1">{vendor.business_registration_info}</p>
               )}
             </div>
             <span
-              className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded ${
+              className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded-xl ${
                 VERIFICATION_BADGE[vendor.verification_status] ?? "bg-neutral-100 text-neutral-700"
               }`}
             >
@@ -49,22 +49,22 @@ export default function VendorProfile() {
           {vendor.bio && <p className="mt-4 text-neutral-700 whitespace-pre-wrap">{vendor.bio}</p>}
 
           <div className="mt-6 grid grid-cols-3 gap-4 text-center">
-            <div className="rounded border border-neutral-200 p-3">
+            <div className="rounded-xl border border-neutral-200 p-3">
               <p className="text-lg font-semibold text-black">{stats.totalBids}</p>
               <p className="text-xs text-neutral-500">Bids submitted</p>
             </div>
-            <div className="rounded border border-neutral-200 p-3">
+            <div className="rounded-xl border border-neutral-200 p-3">
               <p className="text-lg font-semibold text-black">{stats.jobsWon}</p>
               <p className="text-xs text-neutral-500">Jobs won</p>
             </div>
-            <div className="rounded border border-neutral-200 p-3">
+            <div className="rounded-xl border border-neutral-200 p-3">
               <p className="text-lg font-semibold text-black">{stats.jobsCompleted}</p>
               <p className="text-xs text-neutral-500">Jobs completed &amp; paid</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 sm:p-7">
           <h2 className="text-lg font-semibold text-black mb-4">Portfolio</h2>
           {portfolio.length === 0 && (
             <p className="text-sm text-neutral-500">
@@ -83,7 +83,7 @@ export default function VendorProfile() {
                 <img
                   src={img.image_url}
                   alt={img.caption ?? "Vendor work sample"}
-                  className="w-full h-32 object-cover rounded border border-neutral-200"
+                  className="w-full h-32 object-cover rounded-xl border border-neutral-200"
                 />
                 {img.caption && <p className="mt-1 text-xs text-neutral-500">{img.caption}</p>}
               </a>

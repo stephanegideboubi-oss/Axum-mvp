@@ -38,8 +38,8 @@ const SOCIAL_LINKS = [
 export default function Footer() {
   return (
     <footer className="bg-black text-neutral-400 mt-auto">
-      <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <Link to="/" className="text-lg font-bold text-white tracking-wide">
+      <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <Link to="/" className="font-display text-lg font-bold text-white tracking-wide">
           AX<span className="text-orange-500">UM</span>
         </Link>
 
@@ -69,7 +69,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-neutral-800">
-        <div className="max-w-5xl mx-auto px-6 py-4 text-center text-xs text-neutral-500">
+        <div className="max-w-6xl mx-auto px-6 py-4 text-center text-xs text-neutral-500">
           &copy; September 2026 AXUM. All rights reserved.
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { listProjects } from "../api/projects";
+import Eyebrow from "../components/Eyebrow";
 import ProjectCard from "../components/ProjectCard";
 import { useAuth } from "../context/AuthContext";
 import { Project } from "../types/project";
@@ -34,15 +35,18 @@ export default function ProjectList() {
     : projects;
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-10">
-      <div className="max-w-5xl mx-auto px-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-black">Projects</h1>
+    <div className="min-h-screen bg-neutral-50 py-12">
+      <div className="max-w-6xl mx-auto px-6 space-y-8">
+        <div className="flex justify-between items-end gap-4">
+          <div>
+            <Eyebrow>Browse</Eyebrow>
+            <h1 className="mt-2 text-3xl sm:text-4xl font-bold text-black">Projects</h1>
+          </div>
           <div className="flex gap-3">
             {user?.role === "entrepreneur" && (
               <button
                 onClick={() => setMineOnly((v) => !v)}
-                className="text-sm rounded border border-neutral-300 px-3 py-1.5 text-neutral-700"
+                className="text-sm rounded-xl border border-neutral-300 bg-white px-4 py-2 text-neutral-700 hover:border-orange-500 hover:text-orange-600 transition-colors"
               >
                 {mineOnly ? "Show all projects" : "Show only my projects"}
               </button>
@@ -50,7 +54,7 @@ export default function ProjectList() {
             {user?.role === "entrepreneur" && (
               <Link
                 to="/projects/new"
-                className="text-sm rounded bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 font-medium"
+                className="text-sm rounded-xl bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 font-semibold shadow-lg shadow-orange-600/30 transition-colors"
               >
                 New project
               </Link>
@@ -63,7 +67,7 @@ export default function ProjectList() {
           placeholder="Search by project name, country, city..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded border border-neutral-300 px-4 py-2.5 bg-white"
+          className="w-full rounded-full border border-neutral-300 px-5 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
         />
 
         {error && <p className="text-sm text-red-600">{error}</p>}

@@ -44,10 +44,10 @@ export default function AdminVendors() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-10">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="min-h-screen bg-neutral-50 py-12">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-black">Vendor verification</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">Vendor verification</h1>
           <Link to="/admin/disputes" className="text-sm text-neutral-600 underline">
             Disputes
           </Link>
@@ -61,12 +61,12 @@ export default function AdminVendors() {
 
         <ul className="space-y-3">
           {vendors.map((v) => (
-            <li key={v.id} className="bg-white rounded-lg shadow p-5 flex justify-between items-start">
+            <li key={v.id} className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 sm:p-6 flex justify-between items-start">
               <div>
                 <p className="font-medium text-black">{v.name}</p>
                 <p className="text-sm text-neutral-500">{v.email}</p>
                 <p className="text-xs text-neutral-500 mt-1">{v.business_registration_info}</p>
-                <span className="mt-2 inline-block text-xs uppercase tracking-wide font-medium bg-neutral-100 text-neutral-700 px-2 py-1 rounded">
+                <span className="mt-2 inline-block text-xs uppercase tracking-wide font-medium bg-neutral-100 text-neutral-700 px-2.5 py-1 rounded-full">
                   {v.verification_status}
                 </span>
               </div>
@@ -75,14 +75,14 @@ export default function AdminVendors() {
                   <button
                     onClick={() => handleVerify(v.id, "verified")}
                     disabled={actingOn === v.id}
-                    className="rounded bg-green-700 text-white px-3 py-1.5 text-sm disabled:opacity-50"
+                    className="rounded-xl bg-green-700 text-white px-3 py-1.5 text-sm disabled:opacity-50"
                   >
                     Approve
                   </button>
                   <button
                     onClick={() => handleVerify(v.id, "rejected")}
                     disabled={actingOn === v.id}
-                    className="rounded border border-neutral-300 px-3 py-1.5 text-sm disabled:opacity-50"
+                    className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-1.5 text-sm disabled:opacity-50"
                   >
                     Reject
                   </button>

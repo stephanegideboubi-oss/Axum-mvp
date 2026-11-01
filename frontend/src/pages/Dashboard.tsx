@@ -32,8 +32,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <main className="max-w-2xl mx-auto mt-10 space-y-6 pb-10">
-        <div className="bg-white rounded-lg shadow p-8">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 mt-10 space-y-6 pb-10">
+        <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-8">
           <h2 className="text-xl font-semibold text-black">Welcome, {user?.name}</h2>
           <dl className="mt-4 space-y-2 text-sm">
             <div className="flex justify-between">
@@ -53,7 +53,7 @@ export default function Dashboard() {
           </dl>
 
           {user?.role === "vendor" && user.verification_status === "pending" && (
-            <p className="mt-4 text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded p-3">
+            <p className="mt-4 text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-xl p-3">
               Your account is awaiting admin verification. You'll be able to bid on line items once
               approved.
             </p>
@@ -62,7 +62,7 @@ export default function Dashboard() {
           {user?.role === "entrepreneur" && (
             <Link
               to="/projects/new"
-              className="mt-6 inline-block rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium"
+              className="mt-6 inline-block rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-4 py-2 text-sm font-medium"
             >
               Start a new project
             </Link>
@@ -70,7 +70,7 @@ export default function Dashboard() {
         </div>
 
         {user?.role === "entrepreneur" && (
-          <div className="bg-white rounded-lg shadow p-8">
+          <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-8">
             <h3 className="text-lg font-semibold text-black mb-4">My projects</h3>
             {myProjects === null && <p className="text-sm text-neutral-500">Loading...</p>}
             {myProjects !== null && myProjects.length === 0 && (
@@ -87,12 +87,12 @@ export default function Dashboard() {
                   <li key={p.id}>
                     <Link
                       to={`/projects/${p.id}`}
-                      className="block border border-neutral-200 rounded p-4 hover:border-orange-300"
+                      className="block border border-neutral-200 rounded-xl p-4 hover:border-orange-300"
                     >
                       <div className="flex justify-between items-start">
                         <span className="font-medium text-black">{p.title}</span>
                         <span
-                          className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded ${
+                          className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded-xl ${
                             STATUS_BADGE[p.status] ?? "bg-neutral-100 text-neutral-700"
                           }`}
                         >
@@ -105,7 +105,7 @@ export default function Dashboard() {
                             <span>{money(raised, p.currency)} raised</span>
                             <span>Goal: {money(p.goal_amount, p.currency)}</span>
                           </div>
-                          <div className="mt-1 h-1.5 bg-neutral-200 rounded overflow-hidden">
+                          <div className="mt-1 h-1.5 bg-neutral-200 rounded-xl overflow-hidden">
                             <div className="h-full bg-orange-600" style={{ width: `${pct}%` }} />
                           </div>
                         </>

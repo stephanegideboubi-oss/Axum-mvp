@@ -50,10 +50,10 @@ export default function AdminDisputes() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-10">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="min-h-screen bg-neutral-50 py-12">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-black">Open disputes</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">Open disputes</h1>
           <Link to="/admin" className="text-sm text-neutral-600 underline">
             Vendor verification
           </Link>
@@ -67,7 +67,7 @@ export default function AdminDisputes() {
 
         <ul className="space-y-4">
           {disputes.map((d) => (
-            <li key={d.id} className="bg-white rounded-lg shadow p-5 space-y-3">
+            <li key={d.id} className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 sm:p-6 space-y-3">
               <div>
                 <Link to={`/projects/${d.project_id}`} className="font-medium text-black underline">
                   {d.line_item_description}
@@ -82,7 +82,7 @@ export default function AdminDisputes() {
                 <textarea
                   required
                   placeholder="Resolution notes"
-                  className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+                  className="w-full rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2 text-sm"
                   rows={2}
                   value={notesByDispute[d.id] ?? ""}
                   onChange={(e) =>
@@ -102,7 +102,7 @@ export default function AdminDisputes() {
                 <button
                   type="submit"
                   disabled={actingOn === d.id}
-                  className="rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
+                  className="rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
                 >
                   {actingOn === d.id ? "Resolving..." : "Mark resolved"}
                 </button>

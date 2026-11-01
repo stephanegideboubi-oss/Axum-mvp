@@ -27,7 +27,7 @@ export default function EscrowStatusCard({
   const confirmed = escrow.confirmation?.isCurrent ?? false;
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 sm:p-7">
       <h2 className="text-lg font-semibold text-black mb-3">Escrow</h2>
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
@@ -41,12 +41,12 @@ export default function EscrowStatusCard({
       </div>
 
       {confirmed ? (
-        <p className="mt-4 text-sm text-green-700 bg-green-50 border border-green-200 rounded p-3">
+        <p className="mt-4 text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl p-3">
           &#10003; Confirmed by {escrow.confirmation!.bankName} on{" "}
           {formatDate(escrow.confirmation!.confirmedAt)}
         </p>
       ) : (
-        <p className="mt-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+        <p className="mt-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
           &#9888; Awaiting escrow confirmation
           {escrow.confirmation
             ? " — the held amount has changed since the last confirmation."

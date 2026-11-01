@@ -37,7 +37,7 @@ export default function ProjectAnalyticsPanel({
   const { drawdown } = data;
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 space-y-6">
+    <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 sm:p-7 space-y-6">
       <h2 className="text-lg font-semibold text-black">Project analytics</h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -68,7 +68,7 @@ export default function ProjectAnalyticsPanel({
             const variance =
               li.selectedBidAmount !== null ? li.selectedBidAmount - li.budgetedAmount : null;
             return (
-              <li key={li.id} className="border border-neutral-200 rounded p-3 text-sm">
+              <li key={li.id} className="border border-neutral-200 rounded-xl p-3 text-sm">
                 <div className="flex justify-between">
                   <span className="font-medium text-black">{li.description}</span>
                   <span className="text-neutral-500">{money(li.budgetedAmount, currency)} budgeted</span>
@@ -106,7 +106,7 @@ export default function ProjectAnalyticsPanel({
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: "warn" }) {
   return (
-    <div className="rounded border border-neutral-200 p-3">
+    <div className="rounded-xl border border-neutral-200 p-3">
       <p className="text-xs text-neutral-500">{label}</p>
       <p className={`text-lg font-semibold ${tone === "warn" ? "text-red-600" : "text-black"}`}>
         {value}

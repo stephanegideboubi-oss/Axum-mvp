@@ -26,9 +26,9 @@ export default function VendorBids() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-10">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <h1 className="text-2xl font-semibold text-black">Projects I've bid on</h1>
+    <div className="min-h-screen bg-neutral-50 py-12">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-black">Projects I've bid on</h1>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
         {bids === null && !error && <p className="text-sm text-neutral-500">Loading...</p>}
@@ -40,7 +40,7 @@ export default function VendorBids() {
 
         <ul className="space-y-3">
           {bids?.map((b) => (
-            <li key={b.id} className="bg-white rounded-lg shadow p-5">
+            <li key={b.id} className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 sm:p-6">
               <div className="flex justify-between items-start">
                 <div>
                   <Link to={`/projects/${b.project_id}`} className="font-medium text-black underline">
@@ -49,7 +49,7 @@ export default function VendorBids() {
                   <p className="text-sm text-neutral-600 mt-1">{b.line_item_description}</p>
                 </div>
                 <span
-                  className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded shrink-0 ml-3 ${
+                  className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded-xl shrink-0 ml-3 ${
                     BID_STATUS_BADGE[b.status] ?? "bg-neutral-100 text-neutral-700"
                   }`}
                 >

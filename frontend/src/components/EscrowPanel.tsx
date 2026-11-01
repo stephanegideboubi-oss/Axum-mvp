@@ -114,7 +114,7 @@ export default function EscrowPanel({
       {proofDocs.length > 0 && (
         <ul className="space-y-1 mb-2">
           {proofDocs.map((p) => (
-            <li key={p.id} className="bg-neutral-50 rounded p-2">
+            <li key={p.id} className="bg-neutral-50 rounded-xl p-2">
               <span className="uppercase tracking-wide font-medium text-neutral-700">{p.type}</span>{" "}
               — <a href={p.file_url} target="_blank" rel="noreferrer" className="underline">{p.file_url}</a>
               {p.description && <p className="text-neutral-600 mt-0.5">{p.description}</p>}
@@ -127,7 +127,7 @@ export default function EscrowPanel({
         <button
           onClick={handleHold}
           disabled={busy}
-          className="rounded bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 disabled:opacity-50"
+          className="rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-3 py-1.5 disabled:opacity-50"
         >
           {busy ? "Holding..." : `Hold ${money(lineItem.amount, project.currency)} in escrow`}
         </button>
@@ -140,7 +140,7 @@ export default function EscrowPanel({
             <select
               value={proofType}
               onChange={(e) => setProofType(e.target.value as ProofType)}
-              className="rounded border border-neutral-300 px-2 py-1.5"
+              className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-2 py-1.5"
             >
               <option value="invoice">Invoice</option>
               <option value="payment_proof">Payment proof</option>
@@ -149,21 +149,21 @@ export default function EscrowPanel({
             <input
               required
               placeholder="File URL"
-              className="rounded border border-neutral-300 px-2 py-1.5 col-span-2"
+              className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-2 py-1.5 col-span-2"
               value={fileUrl}
               onChange={(e) => setFileUrl(e.target.value)}
             />
           </div>
           <input
             placeholder="Description (optional)"
-            className="w-full rounded border border-neutral-300 px-2 py-1.5"
+            className="w-full rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-2 py-1.5"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
           <button
             type="submit"
             disabled={busy}
-            className="rounded bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 disabled:opacity-50"
+            className="rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-3 py-1.5 disabled:opacity-50"
           >
             {busy ? "Uploading..." : "Upload proof"}
           </button>
@@ -174,7 +174,7 @@ export default function EscrowPanel({
         <button
           onClick={handleAuthorize}
           disabled={busy}
-          className="rounded bg-blue-700 text-white px-3 py-1.5 disabled:opacity-50"
+          className="rounded-xl bg-blue-700 text-white px-3 py-1.5 disabled:opacity-50"
         >
           {busy ? "Authorizing..." : "Authorize release"}
         </button>
@@ -188,7 +188,7 @@ export default function EscrowPanel({
         <button
           onClick={handleRelease}
           disabled={busy || lineItem.disputed || !lineItem.release_authorized}
-          className="rounded bg-green-700 text-white px-3 py-1.5 disabled:opacity-50"
+          className="rounded-xl bg-green-700 text-white px-3 py-1.5 disabled:opacity-50"
           title={
             lineItem.disputed
               ? "Frozen by a dispute — resolve it first"

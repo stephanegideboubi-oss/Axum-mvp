@@ -57,7 +57,7 @@ export default function ProjectImages({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 sm:p-7">
       <h2 className="text-lg font-semibold text-black mb-4">Photos</h2>
       {(error || uploadError) && (
         <p className="text-sm text-red-600 mb-2">{error ?? uploadError}</p>
@@ -73,7 +73,7 @@ export default function ProjectImages({
             <img
               src={img.image_url}
               alt={img.caption ?? "Project photo"}
-              className="w-full h-32 object-cover rounded border border-neutral-200"
+              className="w-full h-32 object-cover rounded-xl border border-neutral-200"
             />
             {img.caption && <p className="mt-1 text-xs text-neutral-500">{img.caption}</p>}
             {isOwner && (
@@ -104,14 +104,14 @@ export default function ProjectImages({
           />
           <input
             placeholder="Caption (optional)"
-            className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2 text-sm"
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
           />
           <button
             type="submit"
             disabled={adding || uploading || !file}
-            className="rounded bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
+            className="rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
             {uploading ? "Uploading..." : adding ? "Adding..." : "Add photo"}
           </button>

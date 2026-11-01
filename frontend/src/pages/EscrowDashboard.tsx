@@ -52,9 +52,9 @@ export default function EscrowDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-10">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <h1 className="text-2xl font-semibold text-black">Escrow accounts</h1>
+    <div className="min-h-screen bg-neutral-50 py-12">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-black">Escrow accounts</h1>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
         {loading && <p className="text-sm text-neutral-500">Loading...</p>}
@@ -66,7 +66,7 @@ export default function EscrowDashboard() {
           {projects.map((p) => {
             const confirmed = p.confirmation?.isCurrent ?? false;
             return (
-              <li key={p.project.id} className="bg-white rounded-lg shadow p-5">
+              <li key={p.project.id} className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 sm:p-6">
                 <div className="flex justify-between items-start">
                   <div>
                     <Link
@@ -78,7 +78,7 @@ export default function EscrowDashboard() {
                     <p className="text-xs text-neutral-500 mt-1">{p.project.status}</p>
                   </div>
                   <span
-                    className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded ${
+                    className={`text-xs uppercase tracking-wide font-medium px-2 py-1 rounded-xl ${
                       confirmed ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
                     }`}
                   >
@@ -108,7 +108,7 @@ export default function EscrowDashboard() {
                 )}
 
                 {p.pendingAuthorization.length > 0 && (
-                  <div className="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+                  <div className="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2">
                     {p.pendingAuthorization.length} line item(s) awaiting admin authorization before
                     they can be released.
                   </div>
@@ -118,7 +118,7 @@ export default function EscrowDashboard() {
                   <button
                     onClick={() => handleConfirm(p.project.id)}
                     disabled={actingOn === p.project.id}
-                    className="rounded bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 text-sm font-medium disabled:opacity-50"
+                    className="rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-3 py-1.5 text-sm font-medium disabled:opacity-50"
                   >
                     {actingOn === p.project.id ? "Confirming..." : "Confirm balance"}
                   </button>

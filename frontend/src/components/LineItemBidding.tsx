@@ -123,7 +123,7 @@ export default function LineItemBidding({
       {showBids && (
         <ul className="space-y-2 mb-3">
           {bids.map((b) => (
-            <li key={b.id} className="flex justify-between items-start bg-neutral-50 rounded p-2 text-xs">
+            <li key={b.id} className="flex justify-between items-start bg-neutral-50 rounded-xl p-2 text-xs">
               <div>
                 <p className="font-medium text-black">
                   <Link to={`/vendors/${b.vendor_id}`} className="text-orange-700 underline">
@@ -139,14 +139,14 @@ export default function LineItemBidding({
                   <button
                     onClick={() => handleSelect(b.id)}
                     disabled={actingOn === b.id}
-                    className="rounded bg-green-700 text-white px-2 py-1 disabled:opacity-50"
+                    className="rounded-xl bg-green-700 text-white px-2 py-1 disabled:opacity-50"
                   >
                     Select
                   </button>
                   <button
                     onClick={() => handleReject(b.id)}
                     disabled={actingOn === b.id}
-                    className="rounded border border-neutral-300 px-2 py-1 disabled:opacity-50"
+                    className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-2 py-1 disabled:opacity-50"
                   >
                     Reject
                   </button>
@@ -172,14 +172,14 @@ export default function LineItemBidding({
               step="0.01"
               required
               placeholder="Bid amount (USD)"
-              className="rounded border border-neutral-300 px-2 py-1.5 text-sm"
+              className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-2 py-1.5 text-sm"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
             <input
               required
               placeholder="Notes / proposal"
-              className="rounded border border-neutral-300 px-2 py-1.5 text-sm"
+              className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-2 py-1.5 text-sm"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -187,7 +187,7 @@ export default function LineItemBidding({
           <button
             type="submit"
             disabled={submitting}
-            className="rounded bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 text-xs font-medium disabled:opacity-50"
+            className="rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-3 py-1.5 text-xs font-medium disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Submit bid"}
           </button>

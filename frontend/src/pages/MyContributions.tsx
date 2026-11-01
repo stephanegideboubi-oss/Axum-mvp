@@ -20,10 +20,10 @@ export default function MyContributions() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-10">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="min-h-screen bg-neutral-50 py-12">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-black">My contributions</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">My contributions</h1>
           <Link to="/projects" className="text-sm text-neutral-600 underline">
             Browse projects
           </Link>
@@ -39,7 +39,7 @@ export default function MyContributions() {
 
         <ul className="space-y-3">
           {contributions.map((c) => (
-            <li key={c.id} className="bg-white rounded-lg shadow p-5">
+            <li key={c.id} className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-5 sm:p-6">
               <div className="flex justify-between items-start">
                 <div>
                   <Link to={`/projects/${c.project_id}`} className="font-medium text-black underline">
@@ -51,7 +51,7 @@ export default function MyContributions() {
                 </div>
                 <div className="text-right">
                   <div className="text-black">{money(c.amount, c.currency)}</div>
-                  <span className="text-xs uppercase tracking-wide font-medium bg-neutral-100 text-neutral-700 px-2 py-1 rounded">
+                  <span className="text-xs uppercase tracking-wide font-medium bg-neutral-100 text-neutral-700 px-2.5 py-1 rounded-full">
                     {c.status}
                   </span>
                 </div>

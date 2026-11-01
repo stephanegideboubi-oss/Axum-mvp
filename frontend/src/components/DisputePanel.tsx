@@ -44,7 +44,7 @@ export default function DisputePanel({
 
   return (
     <div className="mt-3 border-t border-neutral-100 pt-3 text-xs">
-      {result && <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-2">{result}</p>}
+      {result && <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2 mb-2">{result}</p>}
       {error && <p className="text-red-600 mb-2">{error}</p>}
 
       {!open && !result && (
@@ -58,7 +58,7 @@ export default function DisputePanel({
           <textarea
             required
             placeholder="Why does this look suspicious?"
-            className="w-full rounded border border-neutral-300 px-2 py-1.5"
+            className="w-full rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-2 py-1.5"
             rows={2}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -67,14 +67,14 @@ export default function DisputePanel({
             <button
               type="submit"
               disabled={submitting}
-              className="rounded bg-red-700 text-white px-3 py-1.5 disabled:opacity-50"
+              className="rounded-xl bg-red-700 text-white px-3 py-1.5 disabled:opacity-50"
             >
               {submitting ? "Submitting..." : "Submit flag"}
             </button>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="rounded border border-neutral-300 px-3 py-1.5"
+              className="rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-1.5"
             >
               Cancel
             </button>
