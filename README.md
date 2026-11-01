@@ -132,13 +132,16 @@ npm run dev
 3. Log in as the entrepreneur who owns that project, click "View bids" on that line, and click
    "Select" on a bid — it flips to "VENDOR SELECTED," and the other bids on that line are
    auto-rejected.
-4. Log back in as **admin**, open the same line, and click "Hold $X in escrow" — this simulates
-   the bank/escrow step (no real money moves). The line flips to "FUNDS HELD IN ESCROW."
+4. Log in as the **escrow partner** (`escrow@axum.demo` in the demo data), open the same line,
+   and click "Hold $X in escrow" — this simulates the bank step (no real money moves). The line
+   flips to "FUNDS HELD IN ESCROW." The admin cannot hold or release funds.
 5. Log in as the selected vendor and use the "Upload proof" form (pick a type, paste any URL as
    a stand-in file link, optionally add a description). The line flips to "PROOF UPLOADED," and
    the proof is visible to anyone viewing the project.
-6. Log back in as **admin** and click "Release $X to vendor." The line flips to "RELEASED TO
-   VENDOR."
+6. Log in as **admin** and click "Authorize release" (this unlocks the release but moves no
+   money). Then log in as the **escrow partner** and click "Release $X to vendor." The line
+   flips to "RELEASED TO VENDOR." On the escrow partner's Escrow page the project now shows
+   "Unconfirmed" until they click "Confirm balance."
 
 ## Testing the disputes slice manually
 
@@ -167,9 +170,10 @@ docker compose exec backend npm run seed
 
 (Running natively instead of Docker? Just `cd backend && npm run seed`.)
 
-This creates 7 demo accounts (all sharing the password `Demo1234!`) and two projects — one
-fully funded and mid-flow (one line held with proof uploaded and ready to release live, one
-line awarded and ready to hold funds live, one still open for bidding), and one fresh project
+This creates 8 demo accounts (all sharing the password `Demo1234!`, including an escrow partner)
+and two projects — one fully funded and mid-flow (one line held with proof uploaded, waiting
+for the admin to authorize and the escrow partner to release live; one line awarded and ready
+for the escrow partner to hold funds live; one still open for bidding), and one fresh project
 still collecting contributions with one vendor sitting "pending" verification, ready to approve
 live. See [HOW_TO_DEMO.md](HOW_TO_DEMO.md) for a plain-English walkthrough and the full account
 list.

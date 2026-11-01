@@ -18,7 +18,7 @@ interface SeedUser {
   key: string;
   email: string;
   name: string;
-  role: "entrepreneur" | "contributor" | "vendor" | "admin";
+  role: "entrepreneur" | "contributor" | "vendor" | "admin" | "escrow_partner";
   businessRegistrationInfo?: string;
   verificationStatus?: "pending" | "verified" | "rejected";
   bio?: string;
@@ -26,6 +26,7 @@ interface SeedUser {
 
 const USERS: SeedUser[] = [
   { key: "admin", email: "admin@axum.demo", name: "Admin", role: "admin" },
+  { key: "escrow", email: "escrow@axum.demo", name: "First Trust Escrow", role: "escrow_partner" },
   { key: "entrepreneur1", email: "entrepreneur1@axum.demo", name: "Amara Okafor", role: "entrepreneur" },
   { key: "entrepreneur2", email: "entrepreneur2@axum.demo", name: "Ben Carter", role: "entrepreneur" },
   { key: "contributor1", email: "contributor1@axum.demo", name: "Diane Reyes", role: "contributor" },
@@ -156,7 +157,8 @@ async function main() {
       });
     }
 
-    // Line 1 (equipment): vendor selected, funds held, proof uploaded — ready to release live.
+    // Line 1 (equipment): vendor selected, funds held by the escrow partner, proof uploaded —
+    // ready for the admin to authorize and the escrow partner to release live.
     const bid1 = await client.query(
       `INSERT INTO bids (budget_line_item_id, vendor_id, amount, notes, status)
        VALUES ($1, $2, 14500, 'We can source and install all equipment within 3 weeks, including a 1-year warranty.', 'selected')
@@ -174,7 +176,7 @@ async function main() {
     const disbursement1 = await client.query(
       `INSERT INTO disbursements (budget_line_item_id, vendor_id, amount, status, held_by)
        VALUES ($1, $2, 14500, 'held', $3) RETURNING *`,
-      [equipmentId, userIds.vendor1, userIds.admin]
+      [equipmentId, userIds.vendor1, userIds.escrow]
     );
     await client.query(
       `INSERT INTO proof_documents (budget_line_item_id, uploaded_by, type, file_url, description)
@@ -185,11 +187,24 @@ async function main() {
       entityType: "disbursement",
       entityId: disbursement1.rows[0].id,
       action: "disbursement.held",
-      actorId: userIds.admin,
+      actorId: userIds.escrow,
       payload: { lineItemId: equipmentId, seed: true },
     });
 
-    // Line 2 (solar): vendor selected, admin hasn't held funds yet — demo can hold live.
+    // The bank has attested to the held total, so the public "Confirmed by" badge shows.
+    await client.query(
+      `INSERT INTO escrow_confirmations (project_id, confirmed_total, confirmed_by) VALUES ($1, 14500, $2)`,
+      [projA.id, userIds.escrow]
+    );
+    await appendAuditLog(client, {
+      entityType: "project",
+      entityId: projA.id,
+      action: "escrow.confirmed",
+      actorId: userIds.escrow,
+      payload: { confirmedTotal: 14500, seed: true },
+    });
+
+    // Line 2 (solar): vendor selected, escrow partner hasn't held funds yet — demo can hold live.
     await client.query(
       `INSERT INTO bids (budget_line_item_id, vendor_id, amount, notes, status)
        VALUES ($1, $2, 7800, 'Turnkey solar + battery install, sized for 24/7 clinic power.', 'selected')`,
@@ -252,8 +267,8 @@ async function main() {
       USERS.map((u) => ({ role: u.role, email: u.email, verification: u.verificationStatus ?? "n/a" }))
     );
     console.log(`\nProject A (funded, mid-flow): ${projA.id}`);
-    console.log(`  - Equipment line (held + proof uploaded, ready to release live): ${equipmentId}`);
-    console.log(`  - Solar line (awarded, ready to hold funds live): ${solarId}`);
+    console.log(`  - Equipment line (held + proof uploaded, admin authorizes then escrow partner releases live): ${equipmentId}`);
+    console.log(`  - Solar line (awarded, escrow partner holds funds live): ${solarId}`);
     console.log(`  - Training line (still open for bidding): ${trainingId}`);
     console.log(`Project B (fresh, still collecting contributions): ${projB.id}`);
     console.log(`\nVendor pending verification (approve live from /admin): vendor2@axum.demo`);

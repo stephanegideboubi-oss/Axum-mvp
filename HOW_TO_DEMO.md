@@ -26,67 +26,85 @@ docker compose exec backend npm run seed
 That's it — the app is now running and ready to show. When you're done, go back to that terminal
 window and press `Ctrl + C` to stop it.
 
-## What to click through during your demo
+### Want a fresh start before each demo?
 
-You don't need to explain any of the technical plumbing — just walk through these screens. There
-are pre-made example accounts so you don't have to create anything live. All of them use the same
-password: **`Demo1234!`**
+Every click you make during a demo changes the example data (a bid gets picked, money gets
+released), so a second run-through won't match the script below. To reset everything back to the
+starting examples, stop the app (`Ctrl + C`) and run these two, then the seed command above again.
+This erases only the practice data on your computer:
 
-| Who you're logging in as | Email |
-|---|---|
-| The person running a project | `entrepreneur1@axum.demo` |
-| Someone who's already funded the project | `contributor1@axum.demo` |
-| A second contributor | `contributor2@axum.demo` |
-| An already-approved contractor | `vendor1@axum.demo` |
-| A contractor still awaiting approval | `vendor2@axum.demo` |
-| The platform administrator | `admin@axum.demo` |
+```bash
+docker compose down -v
+docker compose up --build
+```
 
-### A suggested order
+## The demo accounts
 
-1. **Don't log in yet.** Go to `/projects` and open "Community Health Clinic — Rural Kenya."
-   Point out: anyone can see the goal, how much has been raised, and every budget line item —
-   without needing an account. That's the "radical transparency" pitch.
+All of them use the same password: **`Demo1234!`**
 
-2. **Log in as the platform administrator** (`admin@axum.demo`), go to `/admin`. Approve
-   `vendor2@axum.demo`, who's shown as "pending" — this is the manual vendor-vetting step:
-   nobody can bid on real work until a person has looked at their business info.
+| Who you're logging in as | Email | What they do in the story |
+|---|---|---|
+| Project owner | `entrepreneur1@axum.demo` | Runs the clinic project, picks the winning contractor |
+| Contributor | `contributor1@axum.demo` | Funded the clinic; funded the bakery |
+| Second contributor | `contributor2@axum.demo` | Also funded the clinic |
+| Approved contractor | `vendor1@axum.demo` | Does the work, uploads proof |
+| Contractor awaiting approval | `vendor2@axum.demo` | Gets approved live by the admin |
+| Platform administrator | `admin@axum.demo` | Vets contractors, reviews proof, **authorizes** payments — but can't move money |
+| The bank (escrow partner) | `escrow@axum.demo` | Holds the money and is the **only** one who can release it |
 
-3. **Log in as the contractor** (`vendor1@axum.demo`). Open the "Staff training program" line
-   item on the clinic project and submit a bid — mention that bidding only opens once a
-   project has hit its full funding goal, never before.
+## The story to tell (about 10 minutes)
 
-4. **Log in as the project owner** (`entrepreneur1@axum.demo`). Open that same line item,
-   click "View bids," and click **Select** on the bid. Point out it's just locked in — the
-   money still hasn't moved anywhere yet.
+The point to land: **no single person can move money.** The project owner picks a contractor,
+the admin checks the proof, and the bank releases the funds — and everyone can see every step.
 
-5. **Log back in as the administrator.** Open that same line item and click **"Hold funds in
-   escrow."** This is the manual stand-in for a real bank/escrow partner — no real money moves,
-   but the workflow is exactly what would happen with one.
+1. **Don't log in yet.** Go to Projects and open "Community Health Clinic — Rural Kenya."
+   Show that anyone can see the goal, the amount raised, every budget line, and the
+   "Confirmed by First Trust Escrow" badge. That's the transparency pitch.
 
-6. **Log in as the contractor again** and use the **Upload proof** form to attach an invoice
-   (any link works for the demo). Point out this becomes visible to every contributor on the
-   project — nobody has to ask for it.
+2. **Log in as the administrator.** Open the vendor list under Admin and approve
+   `vendor2@axum.demo` (shown as "pending"). Nobody can bid until a person has checked their
+   business details.
 
-7. **Log back in as the administrator** and click **"Release funds to vendor."** This is the
-   moment to pause on: the money only ever moves after proof is attached and a person signs off
-   — never automatically, and never before that.
+3. **Log in as the approved contractor** (`vendor1@axum.demo`). Open the "Staff training program"
+   line and submit a bid. Mention bidding only opens after a project reaches its full goal.
 
-8. **Log in as a contributor** (`contributor1@axum.demo`). Contribute a small amount to the
-   second project, "Local Bakery Expansion" — point out you immediately get a tracking number
-   (a "UIN"). **Log all the way out**, go to `/track`, and paste that number in — show that
-   anyone can check on a project's progress this way, with no account at all.
+4. **Log in as the project owner** (`entrepreneur1@axum.demo`). Open that same line, click "View
+   bids," and **Select** the bid. It's locked in, but no money has moved.
 
-9. **Log back in as a contributor**, open the clinic project, and click "Flag this line item as
-   suspicious" on any line with a reason. If that contributor funded a large enough share of the
-   project, the line freezes immediately — point out that this protects contributors without
-   needing a full vote. Then **log in as the administrator**, go to `/admin/disputes`, and
-   resolve it (check "unfreeze" to clear it).
+5. **Log in as the bank** (`escrow@axum.demo`). Open the "Solar power system" line (its contractor
+   was already picked) and click **"Hold … in escrow."** The bank, not the platform, holds funds.
+
+6. **Log in as the contractor again** (`vendor1@axum.demo`). On the solar line, use **Upload
+   proof** to attach an invoice (any link works). Every contributor can now see it.
+
+7. **Log in as the administrator.** Open the "Medical equipment procurement" line — its proof is
+   already uploaded. Click **"Authorize release."** Pause here: the admin has signed off, but the
+   screen says "awaiting the escrow partner." The admin cannot send the money.
+
+8. **Log in as the bank again.** On the same equipment line, click **"Release … to vendor."**
+   (Before step 7 this button was greyed out with "Waiting for an admin to authorize" — worth
+   showing if you have time.) Then open the **Escrow** page from the menu: the project now shows
+   as "Unconfirmed" because the held amount changed — click **Confirm balance**. That's the bank
+   attesting to the live number.
+
+9. **Log in as a contributor** (`contributor1@axum.demo`). Contribute a small amount to "Local
+   Bakery Expansion" and note the tracking number (UIN) you get. **Log all the way out**, go to
+   "Track a project," and paste the number in — anyone can check a project's progress without an account.
+
+10. **Log back in as a contributor** (`contributor1@axum.demo`), open the clinic, and click
+    "Flag this line item as suspicious" on the solar line with a reason. Because this contributor
+    funded over half the project, the line freezes immediately. Then log in as the administrator,
+    open Admin, click the Disputes link, and resolve it (tick "unfreeze" to clear it).
 
 ## If something looks broken during a real demo
 
-- If a page won't load, check the terminal window from step 3 is still open and running.
-- If a status label doesn't make sense at a glance (like "awarded" or "proof_submitted"), you
-  can just describe it in plain terms: "the contractor's been picked but the money hasn't moved
-  yet" or "they've shown their invoice, just waiting on the release."
-- You don't need to touch any code or terminal commands during the demo itself — everything
-  after step 2 above is just clicking around the website.
+- If a page won't load, check the terminal window you left running in "Before your call" is still
+  open.
+- If a button you expect isn't there, you're probably logged in as the wrong person — the app
+  deliberately shows each role only its own buttons. Check the name in the top corner.
+- If the steps don't match what you see, the example data has already been clicked through once.
+  Use "Want a fresh start" above.
+- If a status label doesn't make sense at a glance (like "awarded" or "proof_submitted"), describe
+  it in plain terms: "the contractor's been picked but the money hasn't moved yet" or "they've
+  shown their invoice, just waiting on the sign-off."
+- You don't need to type any commands during the demo itself — it's all clicking.
