@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import { pool } from "../config/db";
 import { HttpError } from "../middleware/errorHandler";
+import { refundContribution } from "../payments/contributionService";
 import { appendAuditLog } from "../services/auditLog";
 import { getProjectEscrowStatus } from "../services/escrow";
 
@@ -218,32 +219,54 @@ export async function markProjectFailed(req: Request, res: Response) {
     throw new HttpError(409, "A funded or closed project can no longer be marked as failed");
   }
 
+  // Close the project to new money first: from here on no new contribution can start,
+  // and any payment still in flight is refunded automatically when it lands.
+  await pool.query("UPDATE projects SET status = 'failed', updated_at = now() WHERE id = $1", [project.id]);
+
+  // Then give every confirmed contribution back through the provider that took it.
+  // Calling this again retries any refund that failed; refunded ones are skipped.
+  const recorded = await pool.query(
+    "SELECT * FROM contributions WHERE project_id = $1 AND status = 'recorded'",
+    [project.id]
+  );
+  let refundedCount = 0;
+  const failedUins: string[] = [];
+  for (const contribution of recorded.rows) {
+    try {
+      await refundContribution(contribution);
+      refundedCount++;
+    } catch (err) {
+      console.error(`Refund failed for contribution ${contribution.id}:`, err);
+      failedUins.push(contribution.uin);
+    }
+  }
+
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    await client.query(
-      "UPDATE projects SET status = 'failed', updated_at = now() WHERE id = $1",
-      [project.id]
-    );
-    const refunded = await client.query(
-      `UPDATE contributions SET status = 'refunded' WHERE project_id = $1 AND status = 'recorded' RETURNING id, contributor_id, amount`,
-      [project.id]
-    );
     await appendAuditLog(client, {
       entityType: "project",
       entityId: project.id,
       action: "project.failed_and_refunded",
       actorId: req.user!.sub,
-      payload: { refundedContributions: refunded.rows.length },
+      payload: { refundedContributions: refundedCount, failedRefunds: failedUins.length },
     });
     await client.query("COMMIT");
-    res.json({ project: { ...project, status: "failed" }, refundedCount: refunded.rows.length });
   } catch (err) {
     await client.query("ROLLBACK");
     throw err;
   } finally {
     client.release();
   }
+
+  if (failedUins.length > 0) {
+    throw new HttpError(
+      502,
+      `The project is closed, but ${failedUins.length} refund(s) could not be completed (${failedUins.join(", ")}). ` +
+        "Choose cancel again to retry them; refunds already made are not repeated."
+    );
+  }
+  res.json({ project: { ...project, status: "failed" }, refundedCount });
 }
 
 const PROJECTS_WITH_RAISED = `

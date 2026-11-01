@@ -156,6 +156,75 @@ npm run dev
    click "Mark resolved" — it disappears from the queue, and if you checked unfreeze, the line
    item's frozen badge clears and its release button works again.
 
+## Payments
+
+Contributions go through a `PaymentProvider` interface
+([`backend/src/payments/`](backend/src/payments/)). Three adapters exist:
+
+| Provider | Who it's for | Needs |
+|---|---|---|
+| `simulated` | Demos. Settles instantly, no money moves. **This is all that runs when no keys are set.** | nothing |
+| `stripe` | Cards, worldwide (Stripe Checkout, hosted page) | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
+| `flutterwave` | Mobile money (Orange Money, MTN MoMo, Wave, Moov Money — whatever is enabled on your Flutterwave account for the currency) and cards, across Africa | `FLUTTERWAVE_SECRET_KEY`, `FLUTTERWAVE_WEBHOOK_HASH` |
+
+A provider appears on the contribute form only when its keys are set. Adding another regional
+provider means one new file implementing `PaymentProvider` plus one line in `registry.ts`.
+
+**How a payment flows.** Contributing creates a `pending` contribution and sends the customer to
+the provider's hosted checkout. The customer's return, and the provider's webhook, are only
+*prompts*: either way the server asks the provider directly what happened, checks the amount and
+currency match, and only then marks the contribution `recorded` (the only status that counts toward
+a project's total). All of that lives in one function,
+[`reconcileContribution`](backend/src/payments/contributionService.ts), so a webhook and a
+return-page visit arriving together can't double-count. A payment that arrives after its project was
+cancelled is refunded automatically. Cancelling a project refunds each contribution through the
+provider that took it; if any refund fails the project stays closed and cancelling again retries only
+the failed ones.
+
+**Safety rails.**
+- Live keys (`sk_live_…`, `FLWSECK-…`) are ignored unless `ALLOW_LIVE_PAYMENTS=true`, with a warning.
+- Webhooks are verified (Stripe: HMAC signature over the raw body with a 5-minute window;
+  Flutterwave: shared `verif-hash`) before anything happens.
+- Provider references are never returned by public endpoints.
+- Set `ALLOW_SIMULATED_PAYMENTS=false` once real providers are live so the no-money method disappears.
+
+**Database changes apply themselves.** The backend runs any new file in
+[`backend/src/db/migrations/`](backend/src/db/migrations/) at startup (idempotent SQL, tracked in a
+`schema_migrations` table) and refuses to start if one fails, so a deploy can never run new code
+against an old database. The payments update (`006_payments.sql`) works this way, which is why an
+existing database needs no manual step.
+
+### Trying real test payments (needs your own sandbox accounts)
+
+Nothing below is required to run the app or the demo.
+
+1. **Stripe:** create a free account and stay in *test mode*. Copy the secret key (`sk_test_…`).
+   For webhooks locally, install the Stripe CLI and run
+   `stripe listen --forward-to localhost:4000/webhooks/stripe`; it prints a `whsec_…` secret.
+   Pay with Stripe's test card `4242 4242 4242 4242`, any future date, any CVC.
+2. **Flutterwave:** create a sandbox/test account and copy the test secret key (`FLWSECK_TEST-…`).
+   In Dashboard → Settings → Webhooks, set a *secret hash* of your choosing and put the same value in
+   `FLUTTERWAVE_WEBHOOK_HASH`. Mobile money availability depends on your account, country and currency.
+   Heads-up: this adapter targets Flutterwave's **v3** API with legacy-style secret keys. If your
+   dashboard only offers v4 (OAuth client id/secret) credentials, the adapter needs a small update.
+3. Put the keys in `backend/.env` (never in `.env.example`, never committed), set `FRONTEND_URL`, and
+   restart the backend. For a deployed backend, point the providers' webhook URLs at
+   `https://<your-backend>/webhooks/stripe` and `/webhooks/flutterwave`.
+
+Locally there's no public URL for webhooks to reach, so the "return page" does the confirming
+(it asks the provider directly), and "My contributions" has a *Check payment status* button.
+
+### Payment self-tests
+
+Two scripts exercise the real settlement and webhook code against your local database, with the
+provider network calls replaced by canned answers (no keys, no network). They leave audit-log rows
+behind (the log is append-only), so run them only against a local demo database:
+
+```bash
+docker compose exec backend npx tsx scripts/payments-selftest.ts
+docker compose exec backend npx tsx scripts/webhook-selftest.ts
+```
+
 ## Demo mode
 
 There's a seed script that populates realistic demo data so you're not presenting an empty app.
@@ -289,7 +358,7 @@ a hard blocker, not a nice-to-have.
 | Area | MVP approach | Must change before real launch? |
 |---|---|---|
 | Funding model | Donation-based, not equity or debt securities | If investment-based contributions are ever added, that needs securities counsel and a separate legal/technical track first — see the spec's Section 6. |
-| Contributions / payments | Fully simulated — clicking "Contribute" just records the amount, no payment gateway at all | **Yes** — Phase 2 per the spec: a real US payment processor first, then Cameroon mobile money via a regional aggregator. |
+| Contributions / payments | Built behind a `PaymentProvider` interface: Stripe (cards) and Flutterwave (mobile money + cards), **test/sandbox keys only** — plus the instant no-money "simulated" method, which is what runs when no keys are set. See "Payments" below. | **Yes** — real merchant accounts, KYB, live keys, and a real settlement/escrow arrangement are still required. Live keys are refused unless `ALLOW_LIVE_PAYMENTS=true`. Money collected by a processor lands in *that processor's* balance — this app does not yet move it into an escrow account. |
 | Escrow | Manual admin "hold" / "release" actions on each line item | **Yes** — Phase 2: a real bank/escrow partnership, formalized legally before any real money moves. |
 | Vendor verification | Manual admin approval of a free-text business registration field | **Yes** — needs a real identity/business verification vendor before real launch. |
 | AI vendor-matching / market-rate suggestions | Not built | Phase 2 per the spec. |
@@ -298,7 +367,7 @@ a hard blocker, not a nice-to-have.
 
 ## Explicitly out of scope for this MVP (Phase 2+)
 
-- Real payment processing (Stripe for US cards/ACH, Flutterwave/mobile money for Cameroon)
+- Live-mode payment processing (sandbox/test mode is built — see "Payments"), and routing collected money into a real escrow account
 - Real bank/escrow partner integration
 - AI vendor-matching and market-rate/anomaly-detection engine
 - Vendor reputation scoring

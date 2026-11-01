@@ -6,6 +6,7 @@ import { AuthProvider } from "./context/AuthContext";
 import AboutUs from "./pages/AboutUs";
 import AdminDisputes from "./pages/AdminDisputes";
 import AdminVendors from "./pages/AdminVendors";
+import ContributionReturn from "./pages/ContributionReturn";
 import CreateProject from "./pages/CreateProject";
 import Dashboard from "./pages/Dashboard";
 import EscrowDashboard from "./pages/EscrowDashboard";
@@ -49,6 +50,14 @@ export default function App() {
               }
             />
             <Route path="/track" element={<TrackByUin />} />
+            <Route
+              path="/contribution/return"
+              element={
+                <ProtectedRoute>
+                  <ContributionReturn />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/my-contributions"
               element={

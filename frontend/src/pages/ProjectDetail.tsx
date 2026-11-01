@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { contribute as contributeRequest } from "../api/contributions";
+import { contribute as contributeRequest, listPaymentProviders } from "../api/contributions";
 import {
   addLineItem,
   deleteLineItem,
@@ -17,6 +17,7 @@ import LineItemBidding from "../components/LineItemBidding";
 import ProjectAnalyticsPanel from "../components/ProjectAnalyticsPanel";
 import ProjectImages from "../components/ProjectImages";
 import { useAuth } from "../context/AuthContext";
+import { PaymentProviderInfo } from "../types/contribution";
 import { EscrowStatus } from "../types/escrow";
 import { BudgetLineItem, Project, ProjectImage } from "../types/project";
 
@@ -71,6 +72,19 @@ export default function ProjectDetail() {
   const [contributionAmount, setContributionAmount] = useState("");
   const [contributing, setContributing] = useState(false);
   const [lastUin, setLastUin] = useState<string | null>(null);
+  const [providers, setProviders] = useState<PaymentProviderInfo[]>([]);
+  const [providerId, setProviderId] = useState<string>("");
+
+  useEffect(() => {
+    if (user?.role !== "contributor") return;
+    listPaymentProviders()
+      .then((list) => {
+        setProviders(list);
+        // Prefer a real payment method over the no-money demo one when both exist.
+        setProviderId((list.find((p) => !p.simulated) ?? list[0])?.id ?? "");
+      })
+      .catch(() => setProviders([]));
+  }, [user?.role]);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -184,7 +198,13 @@ export default function ProjectDetail() {
     setContributing(true);
     setError(null);
     try {
-      const result = await contributeRequest(id, Number(contributionAmount));
+      const result = await contributeRequest(id, Number(contributionAmount), providerId || undefined);
+      if (result.redirectUrl) {
+        // Hosted checkout (card / mobile money). The customer comes back to
+        // /contribution/return, where the payment is confirmed with the provider.
+        window.location.href = result.redirectUrl;
+        return;
+      }
       setLastUin(result.contribution.uin);
       setContributionAmount("");
       await load();
@@ -282,16 +302,46 @@ export default function ProjectDetail() {
           {user?.role === "contributor" && project.status === "open" && (
             <form onSubmit={handleContribute} className="mt-6 border-t border-neutral-200 pt-6">
               <h3 className="font-medium text-black mb-2">Contribute to this project</h3>
-              <p className="text-xs text-neutral-500 mb-3">
-                Simulated for this MVP — no real payment is taken, and no real money moves yet.
-              </p>
+
+              {providers.length > 1 && (
+                <fieldset className="mb-4 grid gap-2 sm:grid-cols-2">
+                  <legend className="sr-only">Payment method</legend>
+                  {providers.map((p) => (
+                    <label
+                      key={p.id}
+                      className={`cursor-pointer rounded-xl border p-3 text-sm transition-colors ${
+                        providerId === p.id
+                          ? "border-orange-500 bg-orange-50 ring-1 ring-orange-500"
+                          : "border-neutral-200 hover:border-neutral-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="payment-method"
+                        value={p.id}
+                        checked={providerId === p.id}
+                        onChange={() => setProviderId(p.id)}
+                        className="sr-only"
+                      />
+                      <span className="block font-medium text-black">{p.label}</span>
+                      <span className="block text-xs text-neutral-500">{p.description}</span>
+                    </label>
+                  ))}
+                </fieldset>
+              )}
+
+              {providers.find((p) => p.id === providerId)?.simulated !== false && (
+                <p className="text-xs text-neutral-500 mb-3">
+                  Simulated for this demo — no real payment is taken, and no real money moves.
+                </p>
+              )}
               <div className="flex gap-3">
                 <input
                   type="number"
                   min="1"
                   step="0.01"
                   required
-                  placeholder="Amount (USD)"
+                  placeholder={`Amount (${project.currency})`}
                   className="flex-1 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent px-3 py-2"
                   value={contributionAmount}
                   onChange={(e) => setContributionAmount(e.target.value)}
@@ -301,7 +351,11 @@ export default function ProjectDetail() {
                   disabled={contributing}
                   className="rounded-xl bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/30 transition-colors text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
                 >
-                  {contributing ? "Contributing..." : "Contribute"}
+                  {contributing
+                    ? "Contributing..."
+                    : providers.find((p) => p.id === providerId)?.simulated === false
+                    ? "Continue to payment"
+                    : "Contribute"}
                 </button>
               </div>
             </form>
