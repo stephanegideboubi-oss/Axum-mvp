@@ -10,7 +10,13 @@ export async function confirmProjectBalance(projectId: string): Promise<void> {
   await apiClient.post(`/escrow/projects/${projectId}/confirm`);
 }
 
-export async function verifyAuditChain(): Promise<{ valid: boolean; brokenAtId?: number }> {
+export async function verifyAuditChain(): Promise<{
+  valid: boolean;
+  checked: number;
+  legacyRows: number;
+  brokenAtId?: string;
+  reason?: "prev_hash_mismatch" | "hash_mismatch";
+}> {
   const { data } = await apiClient.get("/audit-log/verify");
   return data;
 }

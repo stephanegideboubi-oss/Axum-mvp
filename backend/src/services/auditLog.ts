@@ -3,16 +3,83 @@ import { pool } from "../config/db";
 
 const GENESIS_HASH = "0".repeat(64);
 
-function computeHash(prevHash: string, entry: {
+// Arbitrary constant identifying the audit-log append lock (see appendAuditLog).
+const AUDIT_APPEND_LOCK_KEY = 727001;
+
+// Rows written before payloads were canonicalized were hashed with the payload's
+// keys in whatever order the calling code wrote them, which Postgres' JSONB
+// does not preserve. Verification recovers that by trying key orders, which is
+// only affordable for small payloads; beyond this many keys it checks the
+// canonical form only.
+const MAX_KEYS_FOR_LEGACY_ORDER_SEARCH = 7;
+
+interface HashedFields {
   entity_type: string;
   entity_id: string;
   action: string;
   actor_id: string | null;
   payload: unknown;
   created_at: string;
-}): string {
-  const canonical = JSON.stringify(entry) + prevHash;
-  return crypto.createHash("sha256").update(canonical).digest("hex");
+}
+
+// Same value, with object keys sorted at every level, so the serialized form
+// (and therefore the hash) does not depend on key order.
+function canonicalize(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const key of Object.keys(value).sort()) {
+      out[key] = canonicalize((value as Record<string, unknown>)[key]);
+    }
+    return out;
+  }
+  return value;
+}
+
+function hashEntry(prevHash: string, entry: HashedFields): string {
+  // Field order here is fixed and must never change: it is part of the hash.
+  const serialized = JSON.stringify({
+    entity_type: entry.entity_type,
+    entity_id: entry.entity_id,
+    action: entry.action,
+    actor_id: entry.actor_id,
+    payload: entry.payload,
+    created_at: entry.created_at,
+  });
+  return crypto.createHash("sha256").update(serialized + prevHash).digest("hex");
+}
+
+function computeHash(prevHash: string, entry: HashedFields): string {
+  return hashEntry(prevHash, { ...entry, payload: canonicalize(entry.payload) });
+}
+
+function* keyOrders(keys: string[]): Generator<string[]> {
+  if (keys.length <= 1) {
+    yield keys;
+    return;
+  }
+  for (let i = 0; i < keys.length; i++) {
+    const rest = [...keys.slice(0, i), ...keys.slice(i + 1)];
+    for (const order of keyOrders(rest)) yield [keys[i], ...order];
+  }
+}
+
+// True if `storedHash` is what the pre-canonicalization code would have produced
+// for this row under some key order of its payload. Content is still fully
+// covered: any change to a field or value changes the hash under every order.
+function matchesLegacyHash(prevHash: string, entry: HashedFields, storedHash: string): boolean {
+  const payload = entry.payload;
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
+  const keys = Object.keys(payload);
+  if (keys.length > MAX_KEYS_FOR_LEGACY_ORDER_SEARCH) return false;
+  for (const order of keyOrders(keys)) {
+    const reordered: Record<string, unknown> = {};
+    for (const key of order) {
+      reordered[key] = canonicalize((payload as Record<string, unknown>)[key]);
+    }
+    if (hashEntry(prevHash, { ...entry, payload: reordered }) === storedHash) return true;
+  }
+  return false;
 }
 
 /**
@@ -30,9 +97,13 @@ export async function appendAuditLog(
     payload: unknown;
   }
 ): Promise<void> {
-  const lastResult = await client.query(
-    `SELECT hash FROM audit_log ORDER BY id DESC LIMIT 1 FOR UPDATE`
-  );
+  // Serialize appenders until the surrounding transaction ends. Locking the last
+  // row (FOR UPDATE) is not enough: a transaction waiting on it would resume
+  // reading the same "last" row even after another one inserted a newer row, and
+  // both would chain off it, forking the log.
+  await client.query("SELECT pg_advisory_xact_lock($1)", [AUDIT_APPEND_LOCK_KEY]);
+
+  const lastResult = await client.query(`SELECT hash FROM audit_log ORDER BY id DESC LIMIT 1`);
   const prevHash = lastResult.rows[0]?.hash ?? GENESIS_HASH;
   const createdAt = new Date().toISOString();
 
@@ -53,7 +124,7 @@ export async function appendAuditLog(
       params.entityId,
       params.action,
       params.actorId,
-      JSON.stringify(params.payload),
+      JSON.stringify(canonicalize(params.payload)),
       prevHash,
       hash,
       createdAt,
@@ -61,27 +132,49 @@ export async function appendAuditLog(
   );
 }
 
-/** Recomputes the chain from row 1 and confirms every hash matches. Used by the admin integrity check. */
-export async function verifyAuditChain(): Promise<{ valid: boolean; brokenAtId?: number }> {
+export interface AuditChainResult {
+  valid: boolean;
+  checked: number;
+  // Rows written before payload canonicalization that verified under a recovered key order.
+  legacyRows: number;
+  brokenAtId?: string;
+  reason?: "prev_hash_mismatch" | "hash_mismatch";
+}
+
+/**
+ * Recomputes the chain from the first row and confirms every link and hash.
+ * Gaps in `id` are not errors: a rolled-back transaction permanently consumes
+ * a sequence value. Only the hash links matter.
+ */
+export async function verifyAuditChain(): Promise<AuditChainResult> {
   const { rows } = await pool.query(
     `SELECT id, entity_type, entity_id, action, actor_id, payload, prev_hash, hash, created_at
      FROM audit_log ORDER BY id ASC`
   );
 
   let expectedPrevHash = GENESIS_HASH;
+  let legacyRows = 0;
+  let checked = 0;
   for (const row of rows) {
-    const recomputed = computeHash(expectedPrevHash, {
+    if (row.prev_hash !== expectedPrevHash) {
+      return { valid: false, checked, legacyRows, brokenAtId: String(row.id), reason: "prev_hash_mismatch" };
+    }
+    const entry: HashedFields = {
       entity_type: row.entity_type,
       entity_id: row.entity_id,
       action: row.action,
       actor_id: row.actor_id,
       payload: row.payload,
       created_at: new Date(row.created_at).toISOString(),
-    });
-    if (row.prev_hash !== expectedPrevHash || row.hash !== recomputed) {
-      return { valid: false, brokenAtId: row.id };
+    };
+    if (row.hash !== computeHash(expectedPrevHash, entry)) {
+      if (!matchesLegacyHash(expectedPrevHash, entry, row.hash)) {
+        return { valid: false, checked, legacyRows, brokenAtId: String(row.id), reason: "hash_mismatch" };
+      }
+      legacyRows++;
     }
     expectedPrevHash = row.hash;
+    checked++;
   }
-  return { valid: true };
+  return { valid: true, checked, legacyRows };
 }
